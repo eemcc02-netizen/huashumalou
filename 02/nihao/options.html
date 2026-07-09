@@ -1,0 +1,695 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>璇濇湳椹柦锛堥┈鍠界増锛?- 璁剧疆涓庣鐞?/title>
+    <link rel="stylesheet" href="./options.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <div class="brand-copy">
+            <span>璇濇湳椹柦锛堥┈鍠界増锛?/span>
+            <small>蹇嵎璇濇湳 + AI 宸ヤ綔鍙?/small>
+          </div>
+        </div>
+        <nav class="nav-menu" id="nav-menu">
+          <a href="#" data-target="section-list" data-title="璇濇湳鍒楄〃" data-desc="鏌ユ壘銆佺瓫閫夊拰绠＄悊宸叉湁璇濇湳锛岄€傚悎鏃ュ父缁存姢涓庢壒閲忔暣鐞嗐€? class="active">璇濇湳鍒楄〃</a>
+          <a href="#" data-target="section-form" data-title="鏂板/缂栬緫" data-desc="鏂板缓鎴栦慨鏀瑰崟鏉″揩鎹疯瘽鏈紝閫傚悎绮剧粏缂栬緫鍐呭涓庡彉閲忋€?>鏂板/缂栬緫</a>
+          <a href="#" data-target="section-import" data-title="Excel 瀵煎叆" data-desc="浠庤〃鏍兼壒閲忓鍏ヨ瘽鏈紝閫傚悎涓€娆℃€ц縼绉绘垨鏇存柊澶ч噺鏁版嵁銆?>Excel 瀵煎叆</a>
+          <a href="#" data-target="section-settings" data-desc="閰嶇疆瑙﹀彂鏂瑰紡銆佽仈鎯抽潰鏉裤€佹縺娲荤姸鎬佷笌濉叆鐗规晥绛夊熀纭€鑳藉姏銆? data-title="鍩虹璁剧疆">鍩虹璁剧疆</a>
+          <a href="#" data-target="section-ai" data-title="AI寤鸿閰嶇疆" data-desc="閰嶇疆 AI 鎺ュ彛銆佸洖澶嶅垎鏀笌鎵╁睍鎸囦护锛岀鐞?AI 鐩稿叧鑳藉姏銆?>AI寤鸿閰嶇疆</a>
+          <a href="#" data-target="section-change-helper" data-title="寮傚姩澶勭悊" data-desc="鍗曠嫭閰嶇疆寮傚姩澶勭悊鎮诞绐椾娇鐢ㄧ殑妯℃澘銆佸彉閲忚鏄庝笌鏂囨瑙勫垯銆?>寮傚姩澶勭悊</a>
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="header">
+          <div class="page-meta">
+            <h1 id="page-title">璇濇湳鍒楄〃</h1>
+            <p id="page-subtitle" class="page-subtitle">鏌ユ壘銆佺瓫閫夊拰绠＄悊宸叉湁璇濇湳锛岄€傚悎鏃ュ父缁存姢涓庢壒閲忔暣鐞嗐€?/p>
+          </div>
+          <div class="header-actions">
+            <div id="header-version" class="tip header-version">鐗堟湰锛?</div>
+            <button id="btn-export" type="button" class="ghost">瀵煎嚭 JSON</button>
+            <label class="btn-file ghost">
+              瀵煎叆 JSON
+              <input id="input-import-json" type="file" accept=".json,application/json" />
+            </label>
+          </div>
+        </header>
+
+        <!-- 璇濇湳鍒楄〃 Tab -->
+        <div id="section-list" class="tab-pane active">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">浣跨敤鍏ュ彛</div>
+              <h2>缁熶竴绠＄悊宸叉湁蹇嵎璇濇湳</h2>
+              <p>杩欓噷閫傚悎鍋氱瓫閫夈€佹壒閲忓垹闄ゃ€佹寜浣跨敤棰戠巼鍥炴敹鏃ц瘽鏈紝涔熻兘蹇€熸鏌ュ摢浜涘揩鎹疯瘝閲嶅鎴栭暱鏈熸湭浣跨敤銆?/p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">鏀寔鎸夊垎绫荤瓫閫?/span>
+              <span class="tip-chip">鏀寔鎸変娇鐢ㄦ椂闂存帓搴?/span>
+              <span class="tip-chip">鏀寔鎵归噺鍒犻櫎</span>
+            </div>
+          </section>
+          <section class="card">
+            <div class="filter-grid">
+              <label>
+                鍏抽敭瀛?                <input id="search-keyword" type="text" placeholder="鏍囬/蹇嵎璇?鍐呭" />
+              </label>
+              <label>
+                鍒嗙被
+                <select id="filter-category">
+                  <option value="">鍏ㄩ儴鍒嗙被</option>
+                </select>
+              </label>
+              <label>
+                蹇嵎璇嶅墠缂€
+                <input id="filter-prefix" type="text" placeholder="渚嬪锛歴h" />
+              </label>
+              <label>
+                鎺掑簭
+                <select id="filter-sort">
+                  <option value="lastUsedAt">鎸夋渶鍚庝娇鐢ㄦ椂闂?/option>
+                  <option value="createdAt">鎸夊垱寤烘椂闂?/option>
+                  <option value="useCount">鎸変娇鐢ㄦ鏁?/option>
+                </select>
+              </label>
+              <label class="checkbox">
+                <input id="filter-uncategorized" type="checkbox" />
+                浠呯湅鏈垎绫?              </label>
+            </div>
+          </section>
+
+          <section class="card table-card">
+            <div class="table-toolbar">
+              <div id="list-tip" class="tip"></div>
+              <button id="btn-batch-delete" type="button" class="btn-default btn-danger-soft" style="display: none;">鎵归噺鍒犻櫎</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th width="40"><input type="checkbox" id="selectAll"></th>
+                    <th>鏍囬</th>
+                    <th>蹇嵎璇?/th>
+                    <th>鍒嗙被</th>
+                    <th>璇濇湳棰勮</th>
+                    <th>浣跨敤娆℃暟</th>
+                    <th>鏈€鍚庝娇鐢?/th>
+                    <th width="180">鎿嶄綔</th>
+                  </tr>
+                </thead>
+                <tbody id="snippet-tbody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <!-- 鏂板/缂栬緫 Tab -->
+        <div id="section-form" class="tab-pane">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">楂橀鎿嶄綔</div>
+              <h2>蹇€熸柊澧炴垨缂栬緫鍗曟潯璇濇湳</h2>
+              <p>閫傚悎閫愭潯缁存姢璇濇湳鍐呭銆傚揩鎹疯瘝寤鸿绠€鐭€佺ǔ瀹氥€佷究浜庤蹇嗭紝鍐呭閲屽彲鐩存帴浣跨敤鍐呯疆鍙橀噺鍜岃嚜瀹氫箟鍙橀噺銆?/p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">鏀寔 {{date}}</span>
+              <span class="tip-chip">鏀寔 {{time}}</span>
+              <span class="tip-chip">鏀寔 {{signature}}</span>
+            </div>
+          </section>
+          <section class="card">
+            <form id="snippet-form" class="form-grid">
+              <input id="snippet-id" type="hidden" />
+              <label>
+                鏍囬 <span class="required">*</span>
+                <input id="title" type="text" placeholder="渚嬪锛氬敭鍚庡畨鎶氳瘽鏈? required />
+              </label>
+              <label>
+                蹇嵎璇?<span class="required">*</span>
+                <input id="shortcut" type="text" placeholder="渚嬪锛歴houhou01" required />
+              </label>
+              <label>
+                鍒嗙被
+                <input id="category" type="text" placeholder="渚嬪锛氬敭鍚? />
+              </label>
+              <label class="full">
+                璇濇湳鍐呭锛堟敮鎸?{{date}} {{time}} {{signature}} 鍜岃嚜瀹氫箟鍙橀噺锛?<span class="required">*</span>
+                <textarea id="content" rows="8" placeholder="璇疯緭鍏ヨ瘽鏈唴瀹?.." required></textarea>
+              </label>
+              <div class="form-actions full" style="margin-top: 10px;">
+                <button id="btn-save" type="submit" class="btn-primary">淇濆瓨璇濇湳</button>
+                <button id="btn-reset" type="button" class="btn-default">娓呯┖琛ㄥ崟</button>
+                <span id="form-tip" class="tip"></span>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <!-- 鎵归噺瀵煎叆 Tab -->
+        <div id="section-import" class="tab-pane">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">鎵归噺杩佺Щ</div>
+              <h2>浠?Excel 涓€娆℃€у鍏ヨ瘽鏈?/h2>
+              <p>閫傚悎浠庣幇鏈夎〃鏍艰縼绉昏€佹暟鎹€傚缓璁厛鏁寸悊鍒楅『搴忥紝鍐嶆牴鎹€滃啿绐佸鐞嗙瓥鐣モ€濆喅瀹氳鐩栬繕鏄烦杩囬噸澶嶅揩鎹疯瘝銆?/p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">鏈€澶?1000 鏉?/span>
+              <span class="tip-chip">鏀寔瑕嗙洊鍐茬獊</span>
+              <span class="tip-chip">鏀寔鐩存帴绮樿创</span>
+            </div>
+          </section>
+          <section class="card">
+            <div class="import-header">
+              <p class="muted">鏀寔浠?Excel/Numbers 澶嶅埗澶氳鏁版嵁骞跺湪姝ゅ绮樿创銆?br/>榛樿鍒楅『搴忥細<strong>鏍囬銆佸揩鎹疯瘝銆佸垎绫汇€佽瘽鏈唴瀹?/strong>锛涘崟娆℃渶澶氬鍏?1000 鏉°€?/p>
+            </div>
+            <div class="row import-actions">
+              <label class="inline-label">
+                鍐茬獊澶勭悊绛栫暐锛?                <select id="import-conflict-mode" class="auto-width">
+                  <option value="skip">璺宠繃閲嶅蹇嵎璇?/option>
+                  <option value="overwrite">瑕嗙洊閲嶅蹇嵎璇?/option>
+                </select>
+              </label>
+              <button id="btn-import-apply" type="button" class="btn-primary">搴旂敤瀵煎叆鏁版嵁</button>
+            </div>
+            <textarea id="excel-paste" rows="10" placeholder="璇峰皢 Excel 鏁版嵁绮樿创鑷虫澶?.."></textarea>
+            <div id="import-tip" class="tip" style="margin-top: 12px; font-size: 14px;"></div>
+          </section>
+        </div>
+
+        <!-- 鍩虹璁剧疆 Tab -->
+        <div id="section-settings" class="tab-pane">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">鍩虹鑳藉姏</div>
+              <h2>缁熶竴閰嶇疆琛ュ叏琛屼负涓庝娇鐢ㄤ綋楠?/h2>
+              <p>杩欓噷绠＄悊瑙﹀彂鍓嶇紑銆佽仈鎯抽潰鏉裤€佺尨鐩姛鑳姐€佺珯鐐归粦鍚嶅崟鍜屽～鍏ョ壒鏁堛€傚缓璁厛瀹屾垚杩欓噷锛屽啀鍘婚厤缃?AI 鐩稿叧鑳藉姏銆?/p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">鍏堥厤鍓嶇紑</span>
+              <span class="tip-chip">鍐嶈皟闈㈡澘</span>
+              <span class="tip-chip">鏈€鍚庡紑鐗规晥</span>
+            </div>
+          </section>
+          <section class="card">
+            <div class="table-title">鍔熻兘浣跨敤缁熻</div>
+            <div class="usage-stats-grid">
+              <div class="usage-stat-item">
+                <div class="usage-stat-label">鍏ㄩ儴鍔熻兘绱</div>
+                <div class="usage-stat-value" id="usage-total-count">0</div>
+              </div>
+              <div class="usage-stat-item">
+                <div class="usage-stat-label">璇濇湳绱</div>
+                <div class="usage-stat-value" id="usage-snippet-total">0</div>
+              </div>
+              <div class="usage-stat-item">
+                <div class="usage-stat-label">AI 鍔熻兘绱</div>
+                <div class="usage-stat-value" id="usage-ai-total">0</div>
+              </div>
+              <div class="usage-stat-item">
+                <div class="usage-stat-label">鐚寸洰绱</div>
+                <div class="usage-stat-value" id="usage-monkey-total">0</div>
+              </div>
+            </div>
+            <div class="usage-stats-panels">
+              <section class="card card-nested table-card">
+                <div class="table-title">AI 鍔熻兘浣跨敤鏄庣粏</div>
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>鍔熻兘</th>
+                        <th>瑙﹀彂鏂瑰紡</th>
+                        <th>浣跨敤娆℃暟</th>
+                        <th>鏈€杩戜娇鐢?/th>
+                      </tr>
+                    </thead>
+                    <tbody id="usage-ai-tbody"></tbody>
+                  </table>
+                </div>
+              </section>
+              <section class="card card-nested table-card">
+                <div class="table-title">鐚寸洰浣跨敤鏄庣粏</div>
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>鍔熻兘</th>
+                        <th>浣跨敤娆℃暟</th>
+                        <th>鏈€杩戜娇鐢?/th>
+                      </tr>
+                    </thead>
+                    <tbody id="usage-monkey-tbody"></tbody>
+                  </table>
+                </div>
+              </section>
+              <section class="card card-nested table-card">
+                <div class="table-title">楂橀璇濇湳 Top 10</div>
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>鏍囬</th>
+                        <th>蹇嵎璇?/th>
+                        <th>浣跨敤娆℃暟</th>
+                        <th>鏈€杩戜娇鐢?/th>
+                      </tr>
+                    </thead>
+                    <tbody id="usage-snippet-tbody"></tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          </section>
+          <section class="card">
+            <form id="settings-form" class="form-grid">
+              <label>
+                瑙﹀彂鍓嶇紑锛堝鍓嶇紑鐢ㄩ€楀彿鍒嗛殧锛?                <input id="trigger-prefixes" type="text" placeholder="/,銆? />
+              </label>
+              <label>
+                榛樿绛惧悕
+                <input id="default-signature" type="text" placeholder="渚嬪锛氭煇鏌愬鏈? />
+              </label>
+              <label class="checkbox full" style="margin-top: 0; margin-bottom: 8px;">
+                <input id="monkey-eye-enabled" type="checkbox" />
+                寮€鍚尨鐩姛鑳斤紙鑱婂ぉ鏍囬鏃佹樉绀哄鍒舵寜閽級
+              </label>
+              <label class="checkbox full image-auto-send-setting" style="margin-top: 0; margin-bottom: 8px;">
+                <input id="auto-send-image-confirm" type="checkbox" />
+                <div class="image-auto-send-copy">
+                  <div class="image-auto-send-title-row">
+                    <span>图片自动确认</span>
+                    <button id="image-auto-send-strategy-toggle" type="button" class="image-auto-send-arrow" aria-label="切换图片发送模式" aria-expanded="false">▾</button>
+                  </div>
+                  <span id="image-auto-send-strategy-label" class="image-auto-send-strategy-label">自动发送</span>
+                  <div id="image-auto-send-strategy-menu" class="image-auto-send-strategy-menu" hidden>
+                    <button type="button" data-strategy="click">自动发送</button>
+                    <button type="button" data-strategy="enter">回车发送</button>
+                  </div>
+                  <input id="image-auto-send-strategy" type="hidden" value="click" />
+                </div>
+              </label>
+              <label>
+                琛ュ叏妯″紡
+                <select id="completion-mode">
+                  <option value="manual">鎵嬪姩纭锛堝洖杞﹁ˉ鍏級</option>
+                  <option value="auto">鑷姩璇嗗埆锛堝懡涓嵆濉厖锛?/option>
+                </select>
+              </label>
+              <label>
+                鑱旀兂瑙勫垯
+                <select id="match-mode">
+                  <option value="prefix">鍓嶇紑鍖归厤锛堟帹鑽愶級</option>
+                  <option value="contains">鍖呭惈鍖归厤</option>
+                  <option value="exact">绮剧‘鍖归厤</option>
+                </select>
+              </label>
+              <label>
+                鑱旀兂闈㈡澘瀹藉害锛坧x锛?                <input id="suggestion-width" type="number" min="220" max="560" step="10" />
+              </label>
+              <label>
+                鑱旀兂闈㈡澘楂樺害锛坧x锛?                <input id="suggestion-height" type="number" min="120" max="560" step="10" />
+              </label>
+              <label>
+                鑱旀兂瀛椾綋澶у皬锛坧x锛?                <input id="suggestion-font-size" type="number" min="12" max="22" step="1" />
+              </label>
+              <label class="checkbox">
+                <input id="suggestion-remove-hue" type="checkbox" />
+                鑱旀兂闈㈡澘鍘婚櫎鑹茬浉锛堢伆搴︼級
+              </label>
+              <label>
+                鑱旀兂闈㈡澘鏄剧ず閫忔槑搴︼紙40-100锛?                <input id="suggestion-opacity" type="number" min="40" max="100" step="1" />
+              </label>
+              <label>
+                蹇嵎鑱旀兂灞曠ず
+                <select id="suggestion-snippet-display-mode">
+                  <option value="content">鍙樉绀鸿瘽鏈唴瀹?/option>
+                  <option value="title">鍙樉绀烘爣棰?/option>
+                  <option value="both">鏍囬 + 鍐呭</option>
+                </select>
+              </label>
+              <label>
+                蹇嵎棰勮瀛楁暟锛?-30锛?                <input id="suggestion-snippet-preview-length" type="number" min="0" max="30" step="1" />
+              </label>
+              <label>
+                鑱旀兂妗嗘按骞冲亸绉伙紙px锛?                <input id="suggestion-offset-x" type="number" min="-160" max="160" step="2" />
+              </label>
+              <label>
+                鑱旀兂妗嗗瀭鐩磋窛绂伙紙px锛?                <input id="suggestion-offset-y" type="number" min="-40" max="120" step="2" />
+              </label>
+              <label>
+                鑱旀兂鎵╁睍鏂瑰悜
+                <select id="suggestion-expand-direction">
+                  <option value="prefer-up">浼樺厛鍚戜笂鎵╁睍锛堟帹鑽愶級</option>
+                  <option value="auto">鏅鸿兘鑷姩</option>
+                  <option value="always-up">鍥哄畾鍚戜笂</option>
+                  <option value="always-down">鍥哄畾鍚戜笅</option>
+                </select>
+              </label>
+              <label class="full">
+                绔欑偣榛戝悕鍗曪紙鍦ㄨ繖浜涘煙鍚嶄笅绂佺敤琛ュ叏锛屾瘡琛屼竴涓級
+                <textarea id="blacklist-sites" rows="6" placeholder="mail.example.com&#10;internal.example.com"></textarea>
+              </label>
+              <div class="full fx-settings-card">
+                <div class="fx-settings-title">濉叆鐗规晥璁剧疆</div>
+                <div class="fx-settings-desc">鐗规晥璁剧疆灞炰簬鍩虹浜や簰閰嶇疆銆傚彲閫夋嫨鍏抽棴鐗规晥銆佷粎 AI 鍚敤锛屾垨涓哄揩鎹疯瘽鏈笌 AI 璇濇湳鍒嗗埆璁剧疆涓嶅悓鐗规晥涓庡弬鏁般€?/div>
+                <div class="fx-settings-grid">
+                  <label class="full">
+                    鐗规晥鍚敤鑼冨洿
+                    <select id="insert-effect-scope">
+                      <option value="both">鍏ㄩ儴鍚敤</option>
+                      <option value="ai-only">浠?AI 鍚敤鐗规晥</option>
+                      <option value="off">鍏抽棴鐗规晥</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="fx-settings-split">
+                  <div class="fx-settings-panel">
+                    <div class="fx-settings-subtitle">蹇嵎璇濇湳鐗规晥</div>
+                    <div class="fx-settings-grid">
+                      <label>
+                        鐗规晥鏍峰紡
+                        <select id="snippet-effect-style">
+                          <option value="cyber-flame">璧涘崥鐏劙鐗?/option>
+                          <option value="magic-circle">娉曢樀鍠峰皠鐗?/option>
+                          <option value="nebula-trail">鏄熶簯鎷栧熬鐗?/option>
+                          <option value="pixel-burst">鍍忕礌鐖嗚鐗?/option>
+                          <option value="lightning-arc">闇撹櫣鐢靛姬鐗?/option>
+                          <option value="feather-stream">娴佸厜缇界劙鐗?/option>
+                        </select>
+                      </label>
+                      <label>
+                        涓昏壊
+                        <input id="snippet-effect-primary-color" type="color" />
+                      </label>
+                      <label>
+                        杈呰壊
+                        <input id="snippet-effect-accent-color" type="color" />
+                      </label>
+                      <label>
+                        鐗规晥寮哄害锛?0-200锛?                        <input id="snippet-effect-intensity" type="number" min="50" max="200" step="5" />
+                      </label>
+                      <label>
+                        绮掑瓙灏哄锛?0-200锛?                        <input id="snippet-effect-size" type="number" min="50" max="200" step="5" />
+                      </label>
+                      <label>
+                        鎵╂暎鑼冨洿锛?0-200锛?                        <input id="snippet-effect-spread" type="number" min="50" max="200" step="5" />
+                      </label>
+                      <label>
+                        鎸佺画鏃堕暱锛?0-200锛?                        <input id="snippet-effect-duration" type="number" min="50" max="200" step="5" />
+                      </label>
+                    </div>
+                  </div>
+                  <div class="fx-settings-panel">
+                    <div class="fx-settings-subtitle">AI 璇濇湳鐗规晥</div>
+                    <div class="fx-settings-grid">
+                      <label>
+                        鐗规晥鏍峰紡
+                        <select id="ai-effect-style">
+                          <option value="cyber-flame">璧涘崥鐏劙鐗?/option>
+                          <option value="magic-circle">娉曢樀鍠峰皠鐗?/option>
+                          <option value="nebula-trail">鏄熶簯鎷栧熬鐗?/option>
+                          <option value="pixel-burst">鍍忕礌鐖嗚鐗?/option>
+                          <option value="lightning-arc">闇撹櫣鐢靛姬鐗?/option>
+                          <option value="feather-stream">娴佸厜缇界劙鐗?/option>
+                        </select>
+                      </label>
+                      <label>
+                        涓昏壊
+                        <input id="ai-effect-primary-color" type="color" />
+                      </label>
+                      <label>
+                        杈呰壊
+                        <input id="ai-effect-accent-color" type="color" />
+                      </label>
+                      <label>
+                        鐗规晥寮哄害锛?0-200锛?                        <input id="ai-effect-intensity" type="number" min="50" max="200" step="5" />
+                      </label>
+                      <label>
+                        绮掑瓙灏哄锛?0-200锛?                        <input id="ai-effect-size" type="number" min="50" max="200" step="5" />
+                      </label>
+                      <label>
+                        鎵╂暎鑼冨洿锛?0-200锛?                        <input id="ai-effect-spread" type="number" min="50" max="200" step="5" />
+                      </label>
+                      <label>
+                        鎸佺画鏃堕暱锛?0-200锛?                        <input id="ai-effect-duration" type="number" min="50" max="200" step="5" />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="full card card-nested" style="position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; padding: 24px 28px;">
+                <div style="flex: 1; z-index: 2; position: relative;">
+                  <div class="info-title" style="margin-bottom: 8px; font-size: 16px;">鎻掍欢婵€娲荤姸鎬侊細<span id="activation-status">鏈縺娲?/span></div>
+                  <div class="tip info-tip" style="margin-bottom: 16px;">棣栨瀹夎鍚庨渶杈撳叆婵€娲荤爜鎵嶅彲浣跨敤鎻掍欢鍔熻兘銆?/div>
+                  <div class="info-actions" style="justify-content: flex-start;">
+                    <input id="activation-code" type="text" placeholder="璇疯緭鍏ユ縺娲荤爜" class="activation-code-inline" style="background: rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.15);" />
+                    <button id="btn-activate" type="button" class="btn-default" style="background: rgba(255,255,255,0.08);">绔嬪嵆婵€娲?/button>
+                  </div>
+                </div>
+                <img src="assets/snow-king-activation.png" style="position: absolute; right: 0; top: 0; height: 100%; width: 380px; object-fit: cover; opacity: 0.85; mask-image: linear-gradient(to right, transparent, black 40%); -webkit-mask-image: linear-gradient(to right, transparent, black 40%); z-index: 1; pointer-events: none;" alt="椹柦鐗? />
+              </div>
+              <div class="full card card-nested">
+                <div class="info-title">鐗堟湰璁板綍</div>
+                <div id="version-history-settings" class="tip version-history"></div>
+              </div>
+              <div class="form-actions full">
+                <button id="btn-save-settings" type="submit" class="btn-primary">淇濆瓨璁剧疆</button>
+                <span id="settings-tip" class="tip"></span>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <!-- AI寤鸿閰嶇疆 Tab -->
+        <div id="section-ai" class="tab-pane">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">AI 鑳藉姏</div>
+              <h2>閰嶇疆 AI 鍥炲寤鸿涓庢墿灞曞懡浠?/h2>
+              <p>鍏堝畬鎴愭帴鍙ｄ笌鍩虹鎻愮ず璇嶏紝鍐嶆寜涓氬姟鍦烘櫙鏂板鍥炲鍒嗘敮鍜屾墿灞曡鍒欍€傝繖鏍锋櫘閫?`/ai`銆乣/ai杩藉崟`銆乣/鎵╁啓*鏂囨湰` 閮戒細鏇存竻鏅般€?/p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">鍏堥厤鎺ュ彛</span>
+              <span class="tip-chip">鍐嶅姞鍒嗘敮</span>
+              <span class="tip-chip">鏈€鍚庡姞鎵╁睍</span>
+            </div>
+          </section>
+          
+          <!-- 鍖哄煙 1锛氬熀纭€璁剧疆 -->
+          <div class="section-title">
+            <h2>1. 鍩虹閰嶇疆</h2>
+            <p>閰嶇疆澶фā鍨嬫帴鍙ｃ€佽Е鍙戣瘝涓庡叏灞€榛樿鎻愮ず璇?/p>
+          </div>
+          <section class="card">
+            <form id="ai-settings-form" class="form-grid">
+              <label>
+                AI 鎺ュ彛鏍煎紡
+                <select id="ai-api-format">
+                  <option value="openai">OpenAI 鍏煎锛堟帹鑽愶級</option>
+                  <option value="anthropic">Anthropic 鍏煎</option>
+                </select>
+              </label>
+              <label>
+                AI 鏈嶅姟鍟?                <select id="ai-api-host-preset">
+                  <option value="minimax-cn">MiniMax 鍥藉唴锛坅pi.minimaxi.com锛?/option>
+                  <option value="minimax-global">MiniMax 鍥介檯锛坅pi.minimax.io锛?/option>
+                  <option value="deepseek">DeepSeek 瀹樻柟锛坅pi.deepseek.com锛?/option>
+                  <option value="volcengine">鐏北寮曟搸 Ark锛坅rk.cn-beijing.volces.com锛?/option>
+                </select>
+              </label>
+              <label class="full">
+                AI 鎺ュ彛鍦板潃锛堝彲瑕嗙洊锛?                <input id="ai-api-base-url" type="text" placeholder="https://api.minimaxi.com/v1" />
+              </label>
+              <label>
+                AI 妯″瀷
+                <select id="ai-model">
+                  <option value="MiniMax-M2.7">MiniMax-M2.7</option>
+                  <option value="MiniMax-M2.7-highspeed">MiniMax-M2.7-highspeed</option>
+                  <option value="MiniMax-M2.5">MiniMax-M2.5</option>
+                  <option value="MiniMax-M2.5-highspeed">MiniMax-M2.5-highspeed</option>
+                  <option value="MiniMax-M2.1">MiniMax-M2.1</option>
+                  <option value="MiniMax-M2.1-highspeed">MiniMax-M2.1-highspeed</option>
+                  <option value="MiniMax-M2">MiniMax-M2</option>
+                  <option value="deepseek-v4-flash">deepseek-v4-flash</option>
+                  <option value="deepseek-v4-pro">deepseek-v4-pro</option>
+                  <option value="ep-20250101000000-xxxx">鐏北寮曟搸绀轰緥锛歟p-20250101000000-xxxx</option>
+                </select>
+              </label>
+              <label class="full">
+                AI API Key
+                <input id="ai-api-key" type="password" placeholder="sk-..." />
+              </label>
+              <label>
+                AI 瑙﹀彂璇嶏紙涓庡墠缂€缁勫悎锛?                <input id="ai-trigger-word" type="text" placeholder="ai锛堜緥濡?aiai / aihf锛? />
+              </label>
+              <label>
+                杩斿洖 AI 寤鸿鏉℃暟锛?-5锛?                <input id="ai-suggest-count" type="number" min="1" max="5" value="3" />
+              </label>
+              <label>
+                AI 鍙傛暟鍒嗛殧绗?                <select id="ai-argument-separator">
+                  <option value="*">*</option>
+                  <option value="+">+</option>
+                </select>
+              </label>
+              <label class="full">
+                榛樿绯荤粺鎻愮ず璇嶏紙System Prompt锛?                <textarea id="ai-system-prompt" rows="3" placeholder="浣犳槸璧勬繁瀹㈡湇鍔╂墜锛岃鍩轰簬涓婁笅鏂囩敓鎴愮畝娲併€佺ぜ璨屻€佸彲鐩存帴鍙戦€佺殑鍥炲寤鸿銆?></textarea>
+              </label>
+              <label class="full">
+                鐢熸垚鍥炲鎸囦护锛圲ser Prompt 妯℃澘 1锛?                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">褰撹緭鍏?`/ai` 鎴?`/ai鍒嗘敮` 鏃朵娇鐢ㄣ€傚彲浣跨敤 <code>{{count}}</code> 浠ｈ〃寤鸿鏉℃暟锛?code>{{context}}</code> 浠ｈ〃鑱婂ぉ璁板綍銆?/div>
+                <textarea id="ai-reply-prompt" rows="5" placeholder="浠ヤ笅鏄亰澶╀笂涓嬫枃锛歕n{{context}}\n\n璇疯緭鍑?{{count}} 鏉″洖澶嶅缓璁紝瑕佹眰锛歕n1) 姣忔潯涓€鍙ワ紝鍙ｈ鑷劧锛沑n2) 璇皵绀艰矊锛沑n3) 涓嶈缂栭€犱簨瀹烇紱\n4) 姣忔潯鍓嶅姞搴忓彿銆?></textarea>
+              </label>
+              <label class="full">
+                鐢熸垚鍥炲鎸囦护锛圲ser Prompt 妯℃澘 2锛?                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">褰撹緭鍏?`/ai+瑕佹眰`銆乣/ai*瑕佹眰`銆乣/ai鍒嗘敮+瑕佹眰` 鎴?`/ai鍒嗘敮*瑕佹眰` 鏃朵娇鐢ㄣ€傚彲浣跨敤 <code>{{count}}</code>銆?code>{{context}}</code>銆?code>{{intent}}</code>銆?code>{{intent_block}}</code>銆?/div>
+                <textarea id="ai-reply-prompt-with-intent" rows="5" placeholder="浠ヤ笅鏄亰澶╀笂涓嬫枃锛歕n{{context}}\n\n{{intent_block}}璇疯緭鍑?{{count}} 鏉″洖澶嶅缓璁紝瑕佹眰锛歕n1) 浼樺厛婊¤冻棰濆瑕佹眰锛沑n2) 姣忔潯涓€鍙ワ紝鍙ｈ鑷劧锛沑n3) 璇皵绀艰矊锛沑n4) 涓嶈缂栭€犱簨瀹烇紱\n5) 姣忔潯鍓嶅姞搴忓彿銆?></textarea>
+              </label>
+              <div class="form-actions full">
+                <button id="btn-save-ai-settings" type="submit" class="btn-primary">淇濆瓨AI閰嶇疆</button>
+                <button type="button" class="btn-default" id="btn-reset-ai">閲嶇疆涓洪粯璁ら厤缃?/button>
+                <span id="ai-settings-tip" class="tip"></span>
+              </div>
+            </form>
+          </section>
+
+          <!-- 鍖哄煙 2锛欰I 鍥炲鍒嗘敮 -->
+          <div class="section-title section-gap">
+            <h2>2. AI 鍥炲鍒嗘敮绠＄悊</h2>
+            <p>绠＄悊 <code>/ai杩藉崟</code>銆?code>/ai閭€绾?/code> 绛夊垎鏀懡浠ゃ€備粠椤甸潰鑱婂ぉ鍐呭鎻愬彇涓婁笅鏂囥€?/p>
+          </div>
+          <section class="card">
+            <form id="ai-reply-branch-form" class="form-grid">
+              <input id="ai-reply-branch-id" type="hidden" />
+              <label>
+                鍒嗘敮鏍囬
+                <input id="ai-reply-branch-title" type="text" placeholder="渚嬪锛氳拷鍗曞缓璁? />
+              </label>
+              <label>
+                鍒嗘敮璇?                <input id="ai-reply-branch-keyword" type="text" placeholder="渚嬪锛氳拷鍗曪紙瑙﹀彂 /ai杩藉崟锛? />
+              </label>
+              <label class="full">
+                鍒嗘敮鎻愮ず璇?                <textarea id="ai-reply-branch-prompt" rows="4" placeholder="鐢ㄤ簬 /ai鍒嗘敮璇嶏紝浠庤瀹氱殑涓婁笅鏂?div 涓幏鍙栦笂涓嬫枃銆?></textarea>
+              </label>
+              <div class="form-actions full">
+                <button id="btn-save-ai-reply-branch" type="submit" class="btn-primary">淇濆瓨鍥炲鍒嗘敮</button>
+                <button id="btn-reset-ai-reply-branch" type="button" class="btn-default">娓呯┖琛ㄥ崟</button>
+                <span id="ai-reply-branch-tip" class="tip"></span>
+              </div>
+            </form>
+          </section>
+          <section class="card table-card">
+            <div class="table-title">AI 鍥炲鍒嗘敮鍒楄〃</div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>鏍囬</th>
+                    <th>瑙﹀彂璇?/th>
+                    <th>鎻愮ず璇嶉瑙?/th>
+                    <th>浣跨敤娆℃暟</th>
+                    <th width="180">鎿嶄綔</th>
+                  </tr>
+                </thead>
+                <tbody id="ai-reply-branch-tbody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- 鍖哄煙 3锛欰I 鎵╁睍鍔熻兘 -->
+          <div class="section-title section-gap">
+            <h2>3. AI 鎵╁睍瑙勫垯绠＄悊</h2>
+            <p>绠＄悊 <code>/鎵╁啓*鏂囨湰</code>銆?code>/鏀归€?鏂囨湰</code> 绛夊姛鑳姐€傚彧鍙?<code>*</code> 鍙峰悗鐨勫唴瀹逛綔涓轰笂涓嬫枃銆?/p>
+          </div>
+          <section class="card">
+            <form id="ai-extension-rule-form" class="form-grid">
+              <input id="ai-extension-rule-id" type="hidden" />
+              <label>
+                鎵╁睍鏍囬
+                <input id="ai-extension-rule-title" type="text" placeholder="渚嬪锛氭墿鍐? />
+              </label>
+              <label>
+                鍏抽敭璇?                <input id="ai-extension-rule-keyword" type="text" placeholder="渚嬪锛氭墿鍐欙紙瑙﹀彂 /鎵╁啓*鍐呭锛? />
+              </label>
+              <label class="full">
+                鎵╁睍鎻愮ず璇?                <textarea id="ai-extension-rule-prompt" rows="4" placeholder="鐢ㄤ簬 /鍏抽敭璇?鍐呭锛屼粠 * 鍚庤幏鍙栦笂涓嬫枃銆?></textarea>
+              </label>
+              <div class="form-actions full">
+                <button id="btn-save-ai-extension-rule" type="submit" class="btn-primary">淇濆瓨鎵╁睍瑙勫垯</button>
+                <button id="btn-reset-ai-extension-rule" type="button" class="btn-default">娓呯┖琛ㄥ崟</button>
+                <span id="ai-extension-rule-tip" class="tip"></span>
+              </div>
+            </form>
+          </section>
+          <section class="card table-card">
+            <div class="table-title">AI 鎵╁睍瑙勫垯鍒楄〃</div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>鏍囬</th>
+                    <th>瑙﹀彂璇?/th>
+                    <th>鎻愮ず璇嶉瑙?/th>
+                    <th>浣跨敤娆℃暟</th>
+                    <th width="180">鎿嶄綔</th>
+                  </tr>
+                </thead>
+                <tbody id="ai-extension-rule-tbody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div id="section-change-helper" class="tab-pane">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">寮傚姩澶勭悊</div>
+              <h2>閰嶇疆寮傚姩澶勭悊鎮诞绐楁ā鏉?/h2>
+              <p>杩欓噷鍗曠嫭绠＄悊鈥滃紓鍔ㄥ鐞嗏€濇偓娴獥浣跨敤鐨勬枃鏈ā鏉裤€傜偣鍑?popup 涓殑寮傚姩澶勭悊鎸夐挳鍚庯紝浼氬儚鐚寸洰澶囧繕褰曚竴鏍峰湪椤甸潰涓婃墦寮€鎮诞绐楋紝骞舵妸浣犻厤缃殑妯℃澘鍙橀噺鏇挎崲涓哄疄闄呭唴瀹广€?/p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">鏀寔鍚嶅瓧鍙橀噺</span>
+              <span class="tip-chip">鏀寔璇剧▼鍙橀噺</span>
+              <span class="tip-chip">鏀寔閲戦鍙橀噺</span>
+            </div>
+          </section>
+          <section class="card">
+            <form id="change-helper-form" class="form-grid">
+              <label class="full">
+                寮傚姩灏忎綔鏂囨ā鏉?                <textarea id="change-essay-template" rows="10" placeholder="銆愬紓鍔ㄥ鐞嗐€慭n瀛﹀憳锛歿{鍚嶅瓧}}\n璇剧▼锛歿{璇剧▼}}\n閲戦锛歿{閲戦}}"></textarea>
+              </label>
+              <div class="full card card-nested">
+                <div class="info-title">鍙敤鍙橀噺</div>
+                <div class="tip info-tip">
+                  <div><code>{{鍚嶅瓧}}</code> 鎴?<code>{{name}}</code>锛氬鍛樺鍚?/div>
+                  <div><code>{{璇剧▼}}</code> 鎴?<code>{{course}}</code>锛氳绋嬪悕绉?/div>
+                  <div><code>{{閲戦}}</code> 鎴?<code>{{amount}}</code>锛氭秹鍙婇噾棰?/div>
+                </div>
+              </div>
+              <div class="full card card-nested">
+                <div class="info-title">浣跨敤鏂瑰紡</div>
+                <div class="tip info-tip">
+                  <div>1. 鍦ㄦ彃浠堕潰鏉跨偣鍑?`寮傚姩澶勭悊`</div>
+                  <div>2. 椤甸潰浼氬脊鍑轰竴涓拰鐚寸洰澶囧繕褰曠被浼肩殑鍙嫋鎷芥偓娴獥</div>
+                  <div>3. 濉啓鍚嶅瓧銆佽绋嬨€侀噾棰濆悗鐐瑰嚮 `灏忎綔鏂嘸 鑷姩鐢熸垚骞跺鍒?/div>
+                </div>
+              </div>
+              <div class="form-actions full">
+                <button id="btn-save-change-helper" type="submit" class="btn-primary">淇濆瓨寮傚姩澶勭悊閰嶇疆</button>
+                <span id="change-helper-tip" class="tip"></span>
+              </div>
+            </form>
+          </section>
+        </div>
+
+      </main>
+    </div>
+
+    <script src="./options.js"></script>
+  </body>
+</html>
