@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>话术马喽（马喽版） - 设置与管理</title>
+    <link rel="stylesheet" href="./options.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <div class="brand-copy">
+            <span>话术马喽（马喽版）</span>
+            <small>快捷话术 + AI 工作台</small>
+          </div>
+        </div>
+        <nav class="nav-menu" id="nav-menu">
+          <a href="#" data-target="section-list" data-title="话术列表" data-desc="查找、筛选和管理已有话术，适合日常维护与批量整理。" class="active">话术列表</a>
+          <a href="#" data-target="section-form" data-title="新增/编辑" data-desc="新建或修改单条快捷话术，适合精细编辑内容与变量。">新增/编辑</a>
+          <a href="#" data-target="section-import" data-title="Excel 导入" data-desc="从表格批量导入话术，适合一次性迁移或更新大量数据。">Excel 导入</a>
+          <a href="#" data-target="section-settings" data-desc="配置触发方式、联想面板、激活状态与填入特效等基础能力。" data-title="基础设置">基础设置</a>
+          <a href="#" data-target="section-ai" data-title="AI建议配置" data-desc="配置 AI 接口、回复分支与扩展指令，管理 AI 相关能力。">AI建议配置</a>
+          <a href="#" data-target="section-change-helper" data-title="异动处理" data-desc="单独配置异动处理悬浮窗使用的模板、变量说明与文案规则。">异动处理</a>
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="header">
+          <div class="page-meta">
+            <h1 id="page-title">话术列表</h1>
+            <p id="page-subtitle" class="page-subtitle">查找、筛选和管理已有话术，适合日常维护与批量整理。</p>
+          </div>
+          <div class="header-actions">
+            <div id="header-version" class="tip header-version">版本：-</div>
+            <button id="btn-export" type="button" class="ghost">导出 JSON</button>
+            <label class="btn-file ghost">
+              导入 JSON
+              <input id="input-import-json" type="file" accept=".json,application/json" />
+            </label>
+          </div>
+        </header>
+
+        <!-- 话术列表 Tab -->
+        <div id="section-list" class="tab-pane active">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">使用入口</div>
+              <h2>统一管理已有快捷话术</h2>
+              <p>这里适合做筛选、批量删除、按使用频率回收旧话术，也能快速检查哪些快捷词重复或长期未使用。</p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">支持按分类筛选</span>
+              <span class="tip-chip">支持按使用时间排序</span>
+              <span class="tip-chip">支持批量删除</span>
+            </div>
+          </section>
+          <section class="card">
+            <div class="filter-grid">
+              <label>
+                关键字
+                <input id="search-keyword" type="text" placeholder="标题/快捷词/内容" />
+              </label>
+              <label>
+                分类
+                <select id="filter-category">
+                  <option value="">全部分类</option>
+                </select>
+              </label>
+              <label>
+                快捷词前缀
+                <input id="filter-prefix" type="text" placeholder="例如：sh" />
+              </label>
+              <label>
+                排序
+                <select id="filter-sort">
+                  <option value="lastUsedAt">按最后使用时间</option>
+                  <option value="createdAt">按创建时间</option>
+                  <option value="useCount">按使用次数</option>
+                </select>
+              </label>
+              <label class="checkbox">
+                <input id="filter-uncategorized" type="checkbox" />
+                仅看未分类
+              </label>
+            </div>
+          </section>
+
+          <section class="card table-card">
+            <div class="table-toolbar">
+              <div id="list-tip" class="tip"></div>
+              <button id="btn-batch-delete" type="button" class="btn-default btn-danger-soft" style="display: none;">批量删除</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th width="40"><input type="checkbox" id="selectAll"></th>
+                    <th>标题</th>
+                    <th>快捷词</th>
+                    <th>分类</th>
+                    <th>话术预览</th>
+                    <th>使用次数</th>
+                    <th>最后使用</th>
+                    <th width="180">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="snippet-tbody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <!-- 新增/编辑 Tab -->
+        <div id="section-form" class="tab-pane">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">高频操作</div>
+              <h2>快速新增或编辑单条话术</h2>
+              <p>适合逐条维护话术内容。快捷词建议简短、稳定、便于记忆，内容里可直接使用内置变量和自定义变量。</p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">支持 {{date}}</span>
+              <span class="tip-chip">支持 {{time}}</span>
+              <span class="tip-chip">支持 {{signature}}</span>
+            </div>
+          </section>
+          <section class="card">
+            <form id="snippet-form" class="form-grid">
+              <input id="snippet-id" type="hidden" />
+              <label>
+                标题 <span class="required">*</span>
+                <input id="title" type="text" placeholder="例如：售后安抚话术" required />
+              </label>
+              <label>
+                快捷词 <span class="required">*</span>
+                <input id="shortcut" type="text" placeholder="例如：shouhou01" required />
+              </label>
+              <label>
+                分类
+                <input id="category" type="text" placeholder="例如：售后" />
+              </label>
+              <label class="full">
+                话术内容（支持 {{date}} {{time}} {{signature}} 和自定义变量） <span class="required">*</span>
+                <textarea id="content" rows="8" placeholder="请输入话术内容..." required></textarea>
+              </label>
+              <div class="form-actions full" style="margin-top: 10px;">
+                <button id="btn-save" type="submit" class="btn-primary">保存话术</button>
+                <button id="btn-reset" type="button" class="btn-default">清空表单</button>
+                <span id="form-tip" class="tip"></span>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <!-- 批量导入 Tab -->
+        <div id="section-import" class="tab-pane">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">批量迁移</div>
+              <h2>从 Excel 一次性导入话术</h2>
+              <p>适合从现有表格迁移老数据。建议先整理列顺序，再根据“冲突处理策略”决定覆盖还是跳过重复快捷词。</p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">最多 1000 条</span>
+              <span class="tip-chip">支持覆盖冲突</span>
+              <span class="tip-chip">支持直接粘贴</span>
+            </div>
+          </section>
+          <section class="card">
+            <div class="import-header">
+              <p class="muted">支持从 Excel/Numbers 复制多行数据并在此处粘贴。<br/>默认列顺序：<strong>标题、快捷词、分类、话术内容</strong>；单次最多导入 1000 条。</p>
+            </div>
+            <div class="row import-actions">
+              <label class="inline-label">
+                冲突处理策略：
+                <select id="import-conflict-mode" class="auto-width">
+                  <option value="skip">跳过重复快捷词</option>
+                  <option value="overwrite">覆盖重复快捷词</option>
+                </select>
+              </label>
+              <button id="btn-import-apply" type="button" class="btn-primary">应用导入数据</button>
+            </div>
+            <textarea id="excel-paste" rows="10" placeholder="请将 Excel 数据粘贴至此处..."></textarea>
+            <div id="import-tip" class="tip" style="margin-top: 12px; font-size: 14px;"></div>
+          </section>
+        </div>
+
+        <!-- 基础设置 Tab -->
+        <div id="section-settings" class="tab-pane">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">基础能力</div>
+              <h2>统一配置补全行为与使用体验</h2>
+              <p>这里管理触发前缀、联想面板、猴目功能、站点黑名单和填入特效。建议先完成这里，再去配置 AI 相关能力。</p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">先配前缀</span>
+              <span class="tip-chip">再调面板</span>
+              <span class="tip-chip">最后开特效</span>
+            </div>
+          </section>
+          <section class="card">
+            <div class="table-title">功能使用统计</div>
+            <div class="usage-stats-grid">
+              <div class="usage-stat-item">
+                <div class="usage-stat-label">全部功能累计</div>
+                <div class="usage-stat-value" id="usage-total-count">0</div>
+              </div>
+              <div class="usage-stat-item">
+                <div class="usage-stat-label">话术累计</div>
+                <div class="usage-stat-value" id="usage-snippet-total">0</div>
+              </div>
+              <div class="usage-stat-item">
+                <div class="usage-stat-label">AI 功能累计</div>
+                <div class="usage-stat-value" id="usage-ai-total">0</div>
+              </div>
+              <div class="usage-stat-item">
+                <div class="usage-stat-label">猴目累计</div>
+                <div class="usage-stat-value" id="usage-monkey-total">0</div>
+              </div>
+            </div>
+            <div class="usage-stats-panels">
+              <section class="card card-nested table-card">
+                <div class="table-title">AI 功能使用明细</div>
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>功能</th>
+                        <th>触发方式</th>
+                        <th>使用次数</th>
+                        <th>最近使用</th>
+                      </tr>
+                    </thead>
+                    <tbody id="usage-ai-tbody"></tbody>
+                  </table>
+                </div>
+              </section>
+              <section class="card card-nested table-card">
+                <div class="table-title">猴目使用明细</div>
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>功能</th>
+                        <th>使用次数</th>
+                        <th>最近使用</th>
+                      </tr>
+                    </thead>
+                    <tbody id="usage-monkey-tbody"></tbody>
+                  </table>
+                </div>
+              </section>
+              <section class="card card-nested table-card">
+                <div class="table-title">高频话术 Top 10</div>
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>标题</th>
+                        <th>快捷词</th>
+                        <th>使用次数</th>
+                        <th>最近使用</th>
+                      </tr>
+                    </thead>
+                    <tbody id="usage-snippet-tbody"></tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          </section>
+          <section class="card">
+            <form id="settings-form" class="form-grid">
+              <label>
+                触发前缀（多前缀用逗号分隔）
+                <input id="trigger-prefixes" type="text" placeholder="/,、" />
+              </label>
+              <label>
+                默认签名
+                <input id="default-signature" type="text" placeholder="例如：某某客服" />
+              </label>
+              <label class="checkbox full" style="margin-top: 0; margin-bottom: 8px;">
+                <input id="monkey-eye-enabled" type="checkbox" />
+                开启猴目功能（聊天标题旁显示复制按钮）
+              </label>
+              <label>
+                补全模式
+                <select id="completion-mode">
+                  <option value="manual">手动确认（回车补全）</option>
+                  <option value="auto">自动识别（命中即填充）</option>
+                </select>
+              </label>
+              <label>
+                联想规则
+                <select id="match-mode">
+                  <option value="prefix">前缀匹配（推荐）</option>
+                  <option value="contains">包含匹配</option>
+                  <option value="exact">精确匹配</option>
+                </select>
+              </label>
+              <label>
+                联想面板宽度（px）
+                <input id="suggestion-width" type="number" min="220" max="560" step="10" />
+              </label>
+              <label>
+                联想面板高度（px）
+                <input id="suggestion-height" type="number" min="120" max="560" step="10" />
+              </label>
+              <label>
+                联想字体大小（px）
+                <input id="suggestion-font-size" type="number" min="12" max="22" step="1" />
+              </label>
+              <label class="checkbox">
+                <input id="suggestion-remove-hue" type="checkbox" />
+                联想面板去除色相（灰度）
+              </label>
+              <label>
+                联想面板显示透明度（40-100）
+                <input id="suggestion-opacity" type="number" min="40" max="100" step="1" />
+              </label>
+              <label>
+                快捷联想展示
+                <select id="suggestion-snippet-display-mode">
+                  <option value="content">只显示话术内容</option>
+                  <option value="title">只显示标题</option>
+                  <option value="both">标题 + 内容</option>
+                </select>
+              </label>
+              <label>
+                快捷预览字数（0-30）
+                <input id="suggestion-snippet-preview-length" type="number" min="0" max="30" step="1" />
+              </label>
+              <label>
+                联想框水平偏移（px）
+                <input id="suggestion-offset-x" type="number" min="-160" max="160" step="2" />
+              </label>
+              <label>
+                联想框垂直距离（px）
+                <input id="suggestion-offset-y" type="number" min="-40" max="120" step="2" />
+              </label>
+              <label>
+                联想扩展方向
+                <select id="suggestion-expand-direction">
+                  <option value="prefer-up">优先向上扩展（推荐）</option>
+                  <option value="auto">智能自动</option>
+                  <option value="always-up">固定向上</option>
+                  <option value="always-down">固定向下</option>
+                </select>
+              </label>
+              <label class="full">
+                站点黑名单（在这些域名下禁用补全，每行一个）
+                <textarea id="blacklist-sites" rows="6" placeholder="mail.example.com&#10;internal.example.com"></textarea>
+              </label>
+              <div class="full fx-settings-card">
+                <div class="fx-settings-title">填入特效设置</div>
+                <div class="fx-settings-desc">特效设置属于基础交互配置。可选择关闭特效、仅 AI 启用，或为快捷话术与 AI 话术分别设置不同特效与参数。</div>
+                <div class="fx-settings-grid">
+                  <label class="full">
+                    特效启用范围
+                    <select id="insert-effect-scope">
+                      <option value="both">全部启用</option>
+                      <option value="ai-only">仅 AI 启用特效</option>
+                      <option value="off">关闭特效</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="fx-settings-split">
+                  <div class="fx-settings-panel">
+                    <div class="fx-settings-subtitle">快捷话术特效</div>
+                    <div class="fx-settings-grid">
+                      <label>
+                        特效样式
+                        <select id="snippet-effect-style">
+                          <option value="cyber-flame">赛博火焰版</option>
+                          <option value="magic-circle">法阵喷射版</option>
+                          <option value="nebula-trail">星云拖尾版</option>
+                          <option value="pixel-burst">像素爆裂版</option>
+                          <option value="lightning-arc">霓虹电弧版</option>
+                          <option value="feather-stream">流光羽焰版</option>
+                        </select>
+                      </label>
+                      <label>
+                        主色
+                        <input id="snippet-effect-primary-color" type="color" />
+                      </label>
+                      <label>
+                        辅色
+                        <input id="snippet-effect-accent-color" type="color" />
+                      </label>
+                      <label>
+                        特效强度（50-200）
+                        <input id="snippet-effect-intensity" type="number" min="50" max="200" step="5" />
+                      </label>
+                      <label>
+                        粒子尺寸（50-200）
+                        <input id="snippet-effect-size" type="number" min="50" max="200" step="5" />
+                      </label>
+                      <label>
+                        扩散范围（50-200）
+                        <input id="snippet-effect-spread" type="number" min="50" max="200" step="5" />
+                      </label>
+                      <label>
+                        持续时长（50-200）
+                        <input id="snippet-effect-duration" type="number" min="50" max="200" step="5" />
+                      </label>
+                    </div>
+                  </div>
+                  <div class="fx-settings-panel">
+                    <div class="fx-settings-subtitle">AI 话术特效</div>
+                    <div class="fx-settings-grid">
+                      <label>
+                        特效样式
+                        <select id="ai-effect-style">
+                          <option value="cyber-flame">赛博火焰版</option>
+                          <option value="magic-circle">法阵喷射版</option>
+                          <option value="nebula-trail">星云拖尾版</option>
+                          <option value="pixel-burst">像素爆裂版</option>
+                          <option value="lightning-arc">霓虹电弧版</option>
+                          <option value="feather-stream">流光羽焰版</option>
+                        </select>
+                      </label>
+                      <label>
+                        主色
+                        <input id="ai-effect-primary-color" type="color" />
+                      </label>
+                      <label>
+                        辅色
+                        <input id="ai-effect-accent-color" type="color" />
+                      </label>
+                      <label>
+                        特效强度（50-200）
+                        <input id="ai-effect-intensity" type="number" min="50" max="200" step="5" />
+                      </label>
+                      <label>
+                        粒子尺寸（50-200）
+                        <input id="ai-effect-size" type="number" min="50" max="200" step="5" />
+                      </label>
+                      <label>
+                        扩散范围（50-200）
+                        <input id="ai-effect-spread" type="number" min="50" max="200" step="5" />
+                      </label>
+                      <label>
+                        持续时长（50-200）
+                        <input id="ai-effect-duration" type="number" min="50" max="200" step="5" />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="full card card-nested" style="position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; padding: 24px 28px;">
+                <div style="flex: 1; z-index: 2; position: relative;">
+                  <div class="info-title" style="margin-bottom: 8px; font-size: 16px;">插件激活状态：<span id="activation-status">未激活</span></div>
+                  <div class="tip info-tip" style="margin-bottom: 16px;">首次安装后需输入激活码才可使用插件功能。</div>
+                  <div class="info-actions" style="justify-content: flex-start;">
+                    <input id="activation-code" type="text" placeholder="请输入激活码" class="activation-code-inline" style="background: rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.15);" />
+                    <button id="btn-activate" type="button" class="btn-default" style="background: rgba(255,255,255,0.08);">立即激活</button>
+                  </div>
+                </div>
+                <img src="assets/snow-king-activation.png" style="position: absolute; right: 0; top: 0; height: 100%; width: 380px; object-fit: cover; opacity: 0.85; mask-image: linear-gradient(to right, transparent, black 40%); -webkit-mask-image: linear-gradient(to right, transparent, black 40%); z-index: 1; pointer-events: none;" alt="马喽版" />
+              </div>
+              <div class="full card card-nested">
+                <div class="info-title">版本记录</div>
+                <div id="version-history-settings" class="tip version-history"></div>
+              </div>
+              <div class="form-actions full">
+                <button id="btn-save-settings" type="submit" class="btn-primary">保存设置</button>
+                <span id="settings-tip" class="tip"></span>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <!-- AI建议配置 Tab -->
+        <div id="section-ai" class="tab-pane">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">AI 能力</div>
+              <h2>配置 AI 回复建议与扩展命令</h2>
+              <p>先完成接口与基础提示词，再按业务场景新增回复分支和扩展规则。这样普通 `/ai`、`/ai追单`、`/扩写*文本` 都会更清晰。</p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">先配接口</span>
+              <span class="tip-chip">再加分支</span>
+              <span class="tip-chip">最后加扩展</span>
+            </div>
+          </section>
+          
+          <!-- 区域 1：基础设置 -->
+          <div class="section-title">
+            <h2>1. 基础配置</h2>
+            <p>配置大模型接口、触发词与全局默认提示词</p>
+          </div>
+          <section class="card">
+            <form id="ai-settings-form" class="form-grid">
+              <label>
+                AI 接口格式
+                <select id="ai-api-format">
+                  <option value="openai">OpenAI 兼容（推荐）</option>
+                  <option value="anthropic">Anthropic 兼容</option>
+                </select>
+              </label>
+              <label>
+                AI 服务商
+                <select id="ai-api-host-preset">
+                  <option value="minimax-cn">MiniMax 国内（api.minimaxi.com）</option>
+                  <option value="minimax-global">MiniMax 国际（api.minimax.io）</option>
+                  <option value="deepseek">DeepSeek 官方（api.deepseek.com）</option>
+                  <option value="volcengine">火山引擎 Ark（ark.cn-beijing.volces.com）</option>
+                </select>
+              </label>
+              <label class="full">
+                AI 接口地址（可覆盖）
+                <input id="ai-api-base-url" type="text" placeholder="https://api.minimaxi.com/v1" />
+              </label>
+              <label>
+                AI 模型
+                <select id="ai-model">
+                  <option value="MiniMax-M2.7">MiniMax-M2.7</option>
+                  <option value="MiniMax-M2.7-highspeed">MiniMax-M2.7-highspeed</option>
+                  <option value="MiniMax-M2.5">MiniMax-M2.5</option>
+                  <option value="MiniMax-M2.5-highspeed">MiniMax-M2.5-highspeed</option>
+                  <option value="MiniMax-M2.1">MiniMax-M2.1</option>
+                  <option value="MiniMax-M2.1-highspeed">MiniMax-M2.1-highspeed</option>
+                  <option value="MiniMax-M2">MiniMax-M2</option>
+                  <option value="deepseek-v4-flash">deepseek-v4-flash</option>
+                  <option value="deepseek-v4-pro">deepseek-v4-pro</option>
+                  <option value="ep-20250101000000-xxxx">火山引擎示例：ep-20250101000000-xxxx</option>
+                </select>
+              </label>
+              <label class="full">
+                AI API Key
+                <input id="ai-api-key" type="password" placeholder="sk-..." />
+              </label>
+              <label>
+                AI 触发词（与前缀组合）
+                <input id="ai-trigger-word" type="text" placeholder="ai（例如 aiai / aihf）" />
+              </label>
+              <label>
+                返回 AI 建议条数（1-5）
+                <input id="ai-suggest-count" type="number" min="1" max="5" value="3" />
+              </label>
+              <label>
+                AI 参数分隔符
+                <select id="ai-argument-separator">
+                  <option value="*">*</option>
+                  <option value="+">+</option>
+                </select>
+              </label>
+              <label class="full">
+                默认系统提示词（System Prompt）
+                <textarea id="ai-system-prompt" rows="3" placeholder="你是资深客服助手，请基于上下文生成简洁、礼貌、可直接发送的回复建议。"></textarea>
+              </label>
+              <label class="full">
+                生成回复指令（User Prompt 模板 1）
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">当输入 `/ai` 或 `/ai分支` 时使用。可使用 <code>{{count}}</code> 代表建议条数，<code>{{context}}</code> 代表聊天记录。</div>
+                <textarea id="ai-reply-prompt" rows="5" placeholder="以下是聊天上下文：\n{{context}}\n\n请输出 {{count}} 条回复建议，要求：\n1) 每条一句，口语自然；\n2) 语气礼貌；\n3) 不要编造事实；\n4) 每条前加序号。"></textarea>
+              </label>
+              <label class="full">
+                生成回复指令（User Prompt 模板 2）
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">当输入 `/ai+要求`、`/ai*要求`、`/ai分支+要求` 或 `/ai分支*要求` 时使用。可使用 <code>{{count}}</code>、<code>{{context}}</code>、<code>{{intent}}</code>、<code>{{intent_block}}</code>。</div>
+                <textarea id="ai-reply-prompt-with-intent" rows="5" placeholder="以下是聊天上下文：\n{{context}}\n\n{{intent_block}}请输出 {{count}} 条回复建议，要求：\n1) 优先满足额外要求；\n2) 每条一句，口语自然；\n3) 语气礼貌；\n4) 不要编造事实；\n5) 每条前加序号。"></textarea>
+              </label>
+              <div class="form-actions full">
+                <button id="btn-save-ai-settings" type="submit" class="btn-primary">保存AI配置</button>
+                <button type="button" class="btn-default" id="btn-reset-ai">重置为默认配置</button>
+                <span id="ai-settings-tip" class="tip"></span>
+              </div>
+            </form>
+          </section>
+
+          <!-- 区域 2：AI 回复分支 -->
+          <div class="section-title section-gap">
+            <h2>2. AI 回复分支管理</h2>
+            <p>管理 <code>/ai追单</code>、<code>/ai邀约</code> 等分支命令。从页面聊天内容提取上下文。</p>
+          </div>
+          <section class="card">
+            <form id="ai-reply-branch-form" class="form-grid">
+              <input id="ai-reply-branch-id" type="hidden" />
+              <label>
+                分支标题
+                <input id="ai-reply-branch-title" type="text" placeholder="例如：追单建议" />
+              </label>
+              <label>
+                分支词
+                <input id="ai-reply-branch-keyword" type="text" placeholder="例如：追单（触发 /ai追单）" />
+              </label>
+              <label class="full">
+                分支提示词
+                <textarea id="ai-reply-branch-prompt" rows="4" placeholder="用于 /ai分支词，从设定的上下文 div 中获取上下文。"></textarea>
+              </label>
+              <div class="form-actions full">
+                <button id="btn-save-ai-reply-branch" type="submit" class="btn-primary">保存回复分支</button>
+                <button id="btn-reset-ai-reply-branch" type="button" class="btn-default">清空表单</button>
+                <span id="ai-reply-branch-tip" class="tip"></span>
+              </div>
+            </form>
+          </section>
+          <section class="card table-card">
+            <div class="table-title">AI 回复分支列表</div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>标题</th>
+                    <th>触发词</th>
+                    <th>提示词预览</th>
+                    <th>使用次数</th>
+                    <th width="180">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="ai-reply-branch-tbody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- 区域 3：AI 扩展功能 -->
+          <div class="section-title section-gap">
+            <h2>3. AI 扩展规则管理</h2>
+            <p>管理 <code>/扩写*文本</code>、<code>/改造*文本</code> 等功能。只取 <code>*</code> 号后的内容作为上下文。</p>
+          </div>
+          <section class="card">
+            <form id="ai-extension-rule-form" class="form-grid">
+              <input id="ai-extension-rule-id" type="hidden" />
+              <label>
+                扩展标题
+                <input id="ai-extension-rule-title" type="text" placeholder="例如：扩写" />
+              </label>
+              <label>
+                关键词
+                <input id="ai-extension-rule-keyword" type="text" placeholder="例如：扩写（触发 /扩写*内容）" />
+              </label>
+              <label class="full">
+                扩展提示词
+                <textarea id="ai-extension-rule-prompt" rows="4" placeholder="用于 /关键词*内容，从 * 后获取上下文。"></textarea>
+              </label>
+              <div class="form-actions full">
+                <button id="btn-save-ai-extension-rule" type="submit" class="btn-primary">保存扩展规则</button>
+                <button id="btn-reset-ai-extension-rule" type="button" class="btn-default">清空表单</button>
+                <span id="ai-extension-rule-tip" class="tip"></span>
+              </div>
+            </form>
+          </section>
+          <section class="card table-card">
+            <div class="table-title">AI 扩展规则列表</div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>标题</th>
+                    <th>触发词</th>
+                    <th>提示词预览</th>
+                    <th>使用次数</th>
+                    <th width="180">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="ai-extension-rule-tbody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div id="section-change-helper" class="tab-pane">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">异动处理</div>
+              <h2>配置异动处理悬浮窗模板</h2>
+              <p>这里单独管理“异动处理”悬浮窗使用的文本模板。点击 popup 中的异动处理按钮后，会像猴目备忘录一样在页面上打开悬浮窗，并把你配置的模板变量替换为实际内容。</p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">支持名字变量</span>
+              <span class="tip-chip">支持课程变量</span>
+              <span class="tip-chip">支持金额变量</span>
+            </div>
+          </section>
+          <section class="card">
+            <form id="change-helper-form" class="form-grid">
+              <label class="full">
+                异动小作文模板
+                <textarea id="change-essay-template" rows="10" placeholder="【异动处理】\n学员：{{名字}}\n课程：{{课程}}\n金额：{{金额}}"></textarea>
+              </label>
+              <div class="full card card-nested">
+                <div class="info-title">可用变量</div>
+                <div class="tip info-tip">
+                  <div><code>{{名字}}</code> 或 <code>{{name}}</code>：学员姓名</div>
+                  <div><code>{{课程}}</code> 或 <code>{{course}}</code>：课程名称</div>
+                  <div><code>{{金额}}</code> 或 <code>{{amount}}</code>：涉及金额</div>
+                </div>
+              </div>
+              <div class="full card card-nested">
+                <div class="info-title">使用方式</div>
+                <div class="tip info-tip">
+                  <div>1. 在插件面板点击 `异动处理`</div>
+                  <div>2. 页面会弹出一个和猴目备忘录类似的可拖拽悬浮窗</div>
+                  <div>3. 填写名字、课程、金额后点击 `小作文` 自动生成并复制</div>
+                </div>
+              </div>
+              <div class="form-actions full">
+                <button id="btn-save-change-helper" type="submit" class="btn-primary">保存异动处理配置</button>
+                <span id="change-helper-tip" class="tip"></span>
+              </div>
+            </form>
+          </section>
+        </div>
+
+      </main>
+    </div>
+
+    <script src="./options.js"></script>
+  </body>
+</html>

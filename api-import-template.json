@@ -1,0 +1,10 @@
+﻿{
+  "settings": {
+    "aiApiFormat": "openai",
+    "aiApiHostPreset": "minimax-cn",
+    "aiApiBaseUrl": "https://api.minimaxi.com/v1",
+    "aiApiKey": "YOUR_API_KEY_HERE",
+    "aiModel": "MiniMax-M2.7"
+  }
+}
+
