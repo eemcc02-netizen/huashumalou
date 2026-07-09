@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "话术补全助手",
+  "author": "维护联系用户运营毛传艺",
+  "description": "在 Edge 浏览器的输入框中，通过自定义快捷词快速插入常用话术。",
+  "version": "0.1.0",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "话术补全助手"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "options_page": "options.html",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
