@@ -1,0 +1,58 @@
+{
+  "manifest_version": 3,
+  "name": "话术马喽（马喽版）",
+  "version": "1.9.2",
+  "version_name": "1.9.2 马喽版",
+  "description": "话术马喽（马喽版），提升沟通效率",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "话术马喽（马喽版）设置"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "all_frames": true,
+      "match_about_blank": true,
+      "js": [
+        "content.settings.js",
+        "content.storage.js",
+        "content.panel.js",
+        "ai.minimax.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/*.png",
+        "icons/*.png"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}
