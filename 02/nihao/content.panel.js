@@ -68,9 +68,18 @@
       } else if (!item.kind || item.kind === "snippet") {
         const shortcut = formatShortcut(item.shortcut || item.title);
         const preview = buildSnippetDisplayText(item, settings);
+        const isImage = item.type === "image";
+        const imageThumb = isImage && item.imageData
+          ? `<img src="${escapeHtml(item.imageData)}" alt="" style="width:28px; height:28px; flex:0 0 auto; object-fit:cover; border-radius:7px; border:1px solid rgba(255,255,255,0.12); background:rgba(0,0,0,0.2);" />`
+          : "";
+        const typeLabel = isImage
+          ? `<div style="flex:0 0 auto; padding:1px 7px; border-radius:999px; font-size:11px; font-weight:700; color:#fecdd3; background:rgba(244,63,94,0.13); border:1px solid rgba(255,255,255,0.08);">图片</div>`
+          : "";
         row.innerHTML =
           `<div style="display:flex; align-items:center; gap:10px; min-width:0;">` +
             `<div style="flex:0 0 auto; padding:1px 7px; border-radius:999px; font-size:11px; font-weight:700; color:#d8b4fe; background:rgba(168,85,247,0.14); border:1px solid rgba(255,255,255,0.08);">${escapeHtml(shortcut || "未命名")}</div>` +
+            `${typeLabel}` +
+            `${imageThumb}` +
             `<div style="min-width:0; flex:1; color:${isActive ? "#f5edff" : "#d6d3e6"}; opacity:${isActive ? "0.98" : "0.82"}; font-size:12px; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(preview)}</div>` +
           `</div>`;
       } else {
@@ -166,6 +175,9 @@
   }
 
   function buildPreviewText(item, settings) {
+    if (item.type === "image") {
+      return `[图片] ${item.imageName || "未命名图片"}`;
+    }
     const raw = String(item.content || "").replace(/\s+/g, " ").trim();
     if (!raw) return "";
     if (raw === item.title) return raw.slice(0, getSnippetPreviewLength(settings));
@@ -173,6 +185,11 @@
   }
 
   function buildSnippetPreviewText(item, settings) {
+    if (item.type === "image") {
+      const raw = `[图片] ${item.imageName || "未命名图片"}`;
+      const limit = Math.max(8, getSnippetPreviewLength(settings));
+      return raw.slice(0, Math.max(limit, 18));
+    }
     const raw = String(item.content || "").replace(/\s+/g, " ").trim();
     if (!raw) return "";
     const limit = getSnippetPreviewLength(settings);
@@ -263,6 +280,7 @@
     if (item.kind === "ai") return "AI";
     if (item.kind === "ai-command") return "指令";
     if (item.kind === "system") return "提示";
+    if (item.type === "image") return "图片";
     return "话术";
   }
 

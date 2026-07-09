@@ -277,13 +277,20 @@
       .map((item) => {
         const shortcut = String(item.shortcut || "");
         const normalized = normalizeStoredShortcut(item.shortcutNormalized || shortcut, triggerPrefixes);
+        const type = item.type === "image" ? "image" : "text";
         return {
           id: String(item.id || crypto.randomUUID()),
           title: String(item.title || "未命名"),
+          type,
           shortcut,
           shortcutNormalized: normalized,
           category: String(item.category || ""),
-          content: String(item.content || ""),
+          content: type === "image" ? "" : String(item.content || ""),
+          imageName: type === "image" ? String(item.imageName || "") : "",
+          imageMime: type === "image" ? String(item.imageMime || "image/png") : "",
+          imageSize: type === "image" ? Number(item.imageSize || 0) : 0,
+          imageData: type === "image" ? String(item.imageData || "") : "",
+          autoSendAfterInsert: type === "image" && item.autoSendAfterInsert === true,
           useCount: Number(item.useCount || 0),
           createdAt: String(item.createdAt || new Date().toISOString()),
           lastUsedAt: item.lastUsedAt ? String(item.lastUsedAt) : undefined

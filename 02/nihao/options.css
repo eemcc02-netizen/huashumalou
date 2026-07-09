@@ -922,6 +922,120 @@ button, .btn-file {
   font-size: 12px;
 }
 
+.snippet-image-section {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px dashed rgba(216, 180, 254, 0.24);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+}
+
+.snippet-image-picker {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.snippet-image-picker input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.snippet-image-picker-text {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.snippet-image-preview-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.snippet-image-preview {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.22);
+}
+
+.snippet-image-meta {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.snippet-image-name {
+  font-weight: 800;
+  color: var(--text-main);
+  word-break: break-all;
+}
+
+.snippet-image-detail {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.snippet-image-auto-send {
+  margin-top: 0;
+}
+
+.snippet-type-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.snippet-type-text {
+  color: #bfdbfe;
+  background: rgba(59, 130, 246, 0.14);
+  border: 1px solid rgba(147, 197, 253, 0.18);
+}
+
+.snippet-type-image {
+  color: #fecdd3;
+  background: rgba(244, 63, 94, 0.13);
+  border: 1px solid rgba(251, 113, 133, 0.18);
+}
+
+.snippet-preview-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.snippet-thumb {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.22);
+}
+
 input[type="checkbox"] {
   cursor: pointer;
   width: 16px;

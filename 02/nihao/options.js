@@ -1,4 +1,4 @@
-const STORAGE_KEYS = {
+﻿const STORAGE_KEYS = {
   SNIPPETS: "tb-snippets",
   SETTINGS: "tb-settings",
   PENDING_SNIPPET: "tb-pending-snippet",
@@ -6,9 +6,10 @@ const STORAGE_KEYS = {
 };
 
 const MAX_IMPORT_ROWS = 1000;
+const SNIPPET_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
 const VERSION_HISTORY = [
   {
-    version: "1.9.2",
+    version: "1.9.3",
     notes: "新增图片自动确认策略：支持‘自动发送’与‘回车发送’两种模式；popup 与设置页可直接切换并持久化。"
   },
   {
@@ -150,6 +151,7 @@ let state = {
     uncategorizedOnly: false
   }
 };
+let imageDraft = null;
 
 const el = {};
 
@@ -163,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function bootstrap() {
   await loadStorage();
   await consumePendingSnippet();
+  setSnippetTypeUI(getSnippetType() === "image");
   applyFiltersAndRender();
   fillSettingsForm();
   renderVersionInfo();
@@ -172,10 +175,20 @@ async function bootstrap() {
 function collectElements() {
   el.form = document.getElementById("snippet-form");
   el.snippetId = document.getElementById("snippet-id");
+  el.snippetType = document.getElementById("snippet-type");
   el.title = document.getElementById("title");
   el.shortcut = document.getElementById("shortcut");
   el.category = document.getElementById("category");
+  el.contentSection = document.getElementById("snippet-content-section");
   el.content = document.getElementById("content");
+  el.imageSection = document.getElementById("snippet-image-section");
+  el.imageUpload = document.getElementById("snippet-image-upload");
+  el.imagePreviewWrap = document.getElementById("snippet-image-preview-wrap");
+  el.imagePreview = document.getElementById("snippet-image-preview");
+  el.imagePreviewName = document.getElementById("snippet-image-name");
+  el.imagePreviewMime = document.getElementById("snippet-image-mime");
+  el.imagePreviewSize = document.getElementById("snippet-image-size");
+  el.imageAutoSendAfterInsert = document.getElementById("snippet-image-auto-send-after-insert");
   el.formTip = document.getElementById("form-tip");
   el.btnReset = document.getElementById("btn-reset");
   el.tbody = document.getElementById("snippet-tbody");
@@ -303,6 +316,12 @@ function collectElements() {
 function bindEvents() {
   el.form.addEventListener("submit", onSaveSnippet);
   el.btnReset.addEventListener("click", resetSnippetForm);
+  if (el.snippetType) {
+    el.snippetType.addEventListener("change", onSnippetTypeChange);
+  }
+  if (el.imageUpload) {
+    el.imageUpload.addEventListener("change", onSnippetImageFileChange);
+  }
   el.tbody.addEventListener("click", onListActionClick);
   el.tbody.addEventListener("focusout", onInlineEditorFocusOut, true);
   el.tbody.addEventListener("keydown", onInlineEditorKeydown, true);
@@ -486,7 +505,15 @@ async function onSaveSnippet(event) {
   event.preventDefault();
   const model = readSnippetForm();
   if (!model.shortcutNormalized) {
-    setTip(el.formTip, "快捷词不能为空。", true);
+    setTip(el.formTip, "快捷词不能为空", true);
+    return;
+  }
+  if (model.type === "image" && !model.imageData) {
+    setTip(el.formTip, "图片话术请先上传图片", true);
+    return;
+  }
+  if (model.type === "text" && !model.content) {
+    setTip(el.formTip, "文本话术内容不能为空", true);
     return;
   }
   const editingId = el.snippetId.value || "";
@@ -496,7 +523,7 @@ async function onSaveSnippet(event) {
       item.id !== editingId
   );
   if (conflict) {
-    setTip(el.formTip, `快捷词冲突：已被「${conflict.title}」占用。`, true);
+    setTip(el.formTip, `快捷词冲突：已被「${conflict.title}」占用`, true);
     return;
   }
 
@@ -508,7 +535,7 @@ async function onSaveSnippet(event) {
         ...model
       };
     });
-    showActionFeedback(el.formTip, "快捷话术已更新。", "话术保存成功，已覆盖原有内容。");
+    showActionFeedback(el.formTip, "话术已更新", "话术保存成功。");
   } else {
     state.snippets.unshift({
       id: crypto.randomUUID(),
@@ -517,7 +544,7 @@ async function onSaveSnippet(event) {
       createdAt: new Date().toISOString(),
       lastUsedAt: undefined
     });
-    showActionFeedback(el.formTip, "快捷话术已新增。", "新话术已写入本地，可立即触发使用。");
+    showActionFeedback(el.formTip, "话术已新增", "新话术已写入本地，可立即触发使用。");
   }
 
   await persistSnippets();
@@ -525,25 +552,248 @@ async function onSaveSnippet(event) {
   applyFiltersAndRender();
 }
 
+function getSnippetType() {
+  const value = el.snippetType ? String(el.snippetType.value || "").trim() : "text";
+  return value === "image" ? "image" : "text";
+}
+
+function getImageDraftById(editingId) {
+  if (imageDraft) return imageDraft;
+  if (!editingId) return null;
+  const item = state.snippets.find((row) => row.id === editingId);
+  if (!item || item.type !== "image" || !item.imageData) {
+    return null;
+  }
+  return {
+    imageName: String(item.imageName || ""),
+    imageMime: String(item.imageMime || "image/png"),
+    imageSize: Number(item.imageSize || 0),
+    imageData: String(item.imageData || "")
+  };
+}
+
+function setImageDraft(next) {
+  if (!next) {
+    imageDraft = null;
+    if (el.imagePreviewWrap) {
+      el.imagePreviewWrap.hidden = true;
+    }
+    if (el.imagePreview) {
+      el.imagePreview.removeAttribute("src");
+      el.imagePreview.src = "";
+    }
+    if (el.imagePreviewName) {
+      el.imagePreviewName.textContent = "";
+    }
+    if (el.imagePreviewMime) {
+      el.imagePreviewMime.textContent = "";
+    }
+    if (el.imagePreviewSize) {
+      el.imagePreviewSize.textContent = "";
+    }
+    if (el.imageAutoSendAfterInsert) {
+      el.imageAutoSendAfterInsert.checked = false;
+    }
+    return;
+  }
+  imageDraft = {
+    imageName: String(next.imageName || ""),
+    imageMime: String(next.imageMime || "image/png"),
+    imageSize: Number(next.imageSize || 0),
+    imageData: String(next.imageData || "")
+  };
+  if (el.imageUpload) {
+    el.imageUpload.value = "";
+  }
+  if (el.imagePreviewWrap) {
+    el.imagePreviewWrap.hidden = false;
+  }
+  if (el.imagePreview) {
+    el.imagePreview.src = imageDraft.imageData;
+  }
+  if (el.imagePreviewName) {
+    el.imagePreviewName.textContent = imageDraft.imageName || "未命名图片";
+  }
+  if (el.imagePreviewMime) {
+    el.imagePreviewMime.textContent = imageDraft.imageMime || "image/*";
+  }
+  if (el.imagePreviewSize) {
+    el.imagePreviewSize.textContent = formatImageSize(imageDraft.imageSize);
+  }
+}
+
+function formatImageSize(bytes) {
+  const value = Number(bytes || 0);
+  if (!Number.isFinite(value) || value <= 0) return "0 KB";
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${(value / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function dataUrlToFile(dataUrl, fileName, mimeFallback = "image/png") {
+  const text = String(dataUrl || "");
+  const commaIndex = text.indexOf(",");
+  if (commaIndex < 0) {
+    throw new Error("图片数据格式不正确");
+  }
+  const header = text.slice(0, commaIndex);
+  const mimeMatch = header.match(/^data:([^;]+);/i);
+  const mime = mimeMatch ? mimeMatch[1] : String(mimeFallback || "image/png");
+  const binary = atob(text.slice(commaIndex + 1));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new File([bytes], String(fileName || "image.png"), { type: mime });
+}
+
+function setSnippetTypeUI(isImage) {
+  if (el.contentSection) {
+    el.contentSection.hidden = isImage;
+  }
+  if (el.content) {
+    el.content.required = !isImage;
+  }
+  if (el.imageSection) {
+    el.imageSection.style.display = isImage ? "block" : "none";
+  }
+  if (el.imageUpload) {
+    el.imageUpload.required = false;
+  }
+}
+
+function onSnippetTypeChange() {
+  const isImage = getSnippetType() === "image";
+  setSnippetTypeUI(isImage);
+  if (!isImage) {
+    setImageDraft(null);
+  }
+}
+
+function onSnippetImageFileChange(event) {
+  const file = event.target?.files?.[0];
+  if (!file) {
+    return;
+  }
+  if (!file.type || !file.type.startsWith("image/")) {
+    setTip(el.formTip, "请选择图片文件（JPG/PNG/WEBP 等）", true);
+    if (el.imageUpload) {
+      el.imageUpload.value = "";
+    }
+    setImageDraft(null);
+    return;
+  }
+  if (file.size > SNIPPET_IMAGE_MAX_BYTES) {
+    setTip(el.formTip, "图片超过 2MB，请先压缩后上传", true);
+    if (el.imageUpload) {
+      el.imageUpload.value = "";
+    }
+    setImageDraft(null);
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const imageData = String(reader.result || "");
+    if (!imageData) {
+      setTip(el.formTip, "图片读取失败，请重试", true);
+      setImageDraft(null);
+      return;
+    }
+    setImageDraft({
+      imageName: file.name || "image",
+      imageMime: file.type || "image/png",
+      imageSize: file.size || 0,
+      imageData
+    });
+    setTip(el.formTip, "图片上传成功", false);
+  };
+  reader.onerror = () => {
+    setTip(el.formTip, "图片读取失败，请重试", true);
+    setImageDraft(null);
+  };
+  reader.readAsDataURL(file);
+}
+
 function readSnippetForm() {
   const title = (el.title.value || "").trim() || "未命名";
   const shortcut = (el.shortcut.value || "").trim();
   const shortcutNormalized = normalizeStoredShortcut(shortcut, state.settings.triggerPrefixes);
   const category = (el.category.value || "").trim();
+  const type = getSnippetType();
+  const draft = type === "image" ? getImageDraftById(el.snippetId.value || "") : null;
+
+  if (type === "image") {
+    return {
+      title,
+      shortcut,
+      shortcutNormalized,
+      category,
+      type: "image",
+      content: "",
+      imageName: String(draft?.imageName || ""),
+      imageMime: String(draft?.imageMime || "image/png"),
+      imageSize: Number(draft?.imageSize || 0),
+      imageData: String(draft?.imageData || ""),
+      autoSendAfterInsert: el.imageAutoSendAfterInsert?.checked === true
+    };
+  }
+
   const content = (el.content.value || "").trim();
   return {
     title,
     shortcut,
     shortcutNormalized,
     category,
-    content
+    type: "text",
+    content,
+    imageName: "",
+    imageMime: "",
+    imageSize: 0,
+    imageData: "",
+    autoSendAfterInsert: false
   };
 }
 
 function resetSnippetForm() {
   el.snippetId.value = "";
   el.form.reset();
+  if (el.snippetType) {
+    el.snippetType.value = "text";
+  }
+  setSnippetTypeUI(false);
+  setImageDraft(null);
   setTip(el.formTip, "", false);
+}
+
+function fillSnippetForm(item) {
+  if (!item) return;
+  el.snippetId.value = item.id || "";
+  el.title.value = item.title || "";
+  el.shortcut.value = item.shortcut || "";
+  el.category.value = item.category || "";
+  const type = item.type === "image" ? "image" : "text";
+  if (el.snippetType) {
+    el.snippetType.value = type;
+  }
+  setSnippetTypeUI(type === "image");
+  if (type === "image") {
+    el.content.value = "";
+    setImageDraft({
+      imageName: item.imageName || "",
+      imageMime: item.imageMime || "image/png",
+      imageSize: Number(item.imageSize || 0),
+      imageData: item.imageData || ""
+    });
+    if (el.imageAutoSendAfterInsert) {
+      el.imageAutoSendAfterInsert.checked = item.autoSendAfterInsert === true;
+    }
+  } else {
+    setImageDraft(null);
+    el.content.value = item.content || "";
+  }
+  const formTab = document.querySelector('.nav-menu a[data-target="section-form"]');
+  if (formTab) formTab.click();
+  el.title.focus();
 }
 
 async function onListActionClick(event) {
@@ -551,11 +801,17 @@ async function onListActionClick(event) {
   const editableCell = event.target.closest(".editable-cell");
   if (editableCell) {
     const id = editableCell.getAttribute("data-id");
-    if (id && state.editingId !== id) {
-      if (state.editingId) {
-        const saved = await commitInlineEdit(state.editingId);
-        if (!saved) return;
-      }
+    const item = state.snippets.find((row) => row.id === id);
+    if (!id || !item) return;
+    if (item.type === "image") {
+      fillSnippetForm(item);
+      return;
+    }
+    if (state.editingId && state.editingId !== id) {
+      const saved = await commitInlineEdit(state.editingId);
+      if (!saved) return;
+    }
+    if (state.editingId !== id) {
       enterInlineEdit(id);
     }
     return;
@@ -576,6 +832,19 @@ async function onListActionClick(event) {
   if (action === "copy") {
     const item = state.snippets.find((row) => row.id === id);
     if (!item) return;
+    if (item.type === "image") {
+      try {
+        await copyImageSnippetToClipboard(item);
+        item.useCount = (item.useCount || 0) + 1;
+        item.lastUsedAt = new Date().toISOString();
+        void persistSnippets();
+        applyFiltersAndRender();
+        showActionFeedback(el.listTip, "图片已复制", "图片话术已写入剪贴板。");
+      } catch (err) {
+        setTip(el.listTip, `图片复制失败：${err.message || err}`, true);
+      }
+      return;
+    }
     
     item.useCount = (item.useCount || 0) + 1;
     item.lastUsedAt = new Date().toISOString();
@@ -604,6 +873,12 @@ async function onListActionClick(event) {
     }
     return;
   }
+  if (action === "edit") {
+    const item = state.snippets.find((row) => row.id === id);
+    if (!item) return;
+    fillSnippetForm(item);
+    return;
+  }
   if (action === "delete") {
     const ok = window.confirm("确定删除该话术吗？");
     if (!ok) return;
@@ -611,6 +886,14 @@ async function onListActionClick(event) {
     void persistSnippets();
     applyFiltersAndRender();
   }
+}
+
+async function copyImageSnippetToClipboard(item) {
+  if (!navigator.clipboard || typeof navigator.clipboard.write !== "function" || typeof ClipboardItem === "undefined") {
+    throw new Error("当前浏览器不支持复制图片到剪贴板");
+  }
+  const file = dataUrlToFile(item.imageData, item.imageName, item.imageMime);
+  await navigator.clipboard.write([new ClipboardItem({ [file.type]: file })]);
 }
 
 function enterInlineEdit(id) {
@@ -741,7 +1024,7 @@ function applyFiltersAndRender() {
 
   if (keyword) {
     list = list.filter((item) =>
-      [item.title, item.shortcut, item.content]
+      [item.title, item.shortcut, item.category, item.content, item.imageName, item.type === "image" ? "图片 image" : "文本 text"]
         .join("\n")
         .toLowerCase()
         .includes(keyword)
@@ -772,6 +1055,17 @@ function applyFiltersAndRender() {
   renderCategoryFilterOptions();
 }
 
+function buildSnippetListPreview(item) {
+  if (item.type === "image") {
+    return escapeHtml(`[图片] ${item.imageName || "未命名图片"}`);
+  }
+  let preview = escapeHtml(item.content || "").replace(/\n/g, " ");
+  if (preview.length > 30) {
+    preview = `${preview.substring(0, 30)}...`;
+  }
+  return preview;
+}
+
 function renderList() {
   const rows = state.filtered.map((item) => {
     const isEditing = state.editingId === item.id;
@@ -784,6 +1078,7 @@ function renderList() {
           <td><input type="text" class="inline-input" id="edit-title-${item.id}" value="${escapeAttr(item.title)}" placeholder="标题" /></td>
           <td><input type="text" class="inline-input" id="edit-shortcut-${item.id}" value="${escapeAttr(item.shortcut)}" placeholder="快捷词" /></td>
           <td><input type="text" class="inline-input" id="edit-category-${item.id}" value="${escapeAttr(item.category)}" placeholder="分类" /></td>
+          <td><span class="snippet-type-tag snippet-type-text">文本</span></td>
           <td><textarea class="inline-textarea" id="edit-content-${item.id}" rows="2" placeholder="话术内容">${escapeHtml(item.content)}</textarea></td>
           <td>${item.useCount || 0}</td>
           <td>${formatTime(item.lastUsedAt)}</td>
@@ -795,11 +1090,15 @@ function renderList() {
       `;
     }
     
-    // 处理内容预览，去除换行并截断
-    let preview = escapeHtml(item.content).replace(/\n/g, ' ');
-    if (preview.length > 30) {
-      preview = preview.substring(0, 30) + '...';
-    }
+    const isImage = item.type === "image";
+    const typeLabel = isImage
+      ? '<span class="snippet-type-tag snippet-type-image">图片</span>'
+      : '<span class="snippet-type-tag snippet-type-text">文本</span>';
+    const preview = buildSnippetListPreview(item);
+    const previewTitle = isImage ? `[图片] ${item.imageName || ""}` : item.content || "";
+    const thumbnail = isImage && item.imageData
+      ? `<img class="snippet-thumb" src="${escapeAttr(item.imageData)}" alt="图片缩略图" />`
+      : "";
     
     return `
       <tr>
@@ -814,12 +1113,16 @@ function renderList() {
           ${item.category ? `<span class="category-tag">${escapeHtml(item.category)}</span>` : '<span class="muted">未分类</span>'}
         </td>
         <td class="editable-cell" data-action="edit-inline" data-id="${item.id}">
-          <div class="cell-truncate content-preview" title="${escapeAttr(item.content)}">${preview}</div>
+          ${typeLabel}
+        </td>
+        <td class="editable-cell" data-action="edit-inline" data-id="${item.id}">
+          <div class="snippet-preview-line" title="${escapeAttr(previewTitle)}">${thumbnail}<span class="cell-truncate content-preview">${preview}</span></div>
         </td>
         <td>${item.useCount || 0}</td>
         <td>${formatTime(item.lastUsedAt)}</td>
         <td class="ops">
           <button type="button" class="ghost" data-action="copy" data-id="${item.id}">复制</button>
+          <button type="button" class="ghost" data-action="edit" data-id="${item.id}">编辑</button>
           <button type="button" class="ghost" data-action="delete" data-id="${item.id}">删除</button>
         </td>
       </tr>
@@ -919,10 +1222,16 @@ async function onApplyImportedRows() {
       const item = {
         id: crypto.randomUUID(),
         title: row.title,
+        type: "text",
         shortcut: row.shortcut,
         shortcutNormalized: row.shortcutNormalized,
         category: row.category,
         content: row.content,
+        imageName: "",
+        imageMime: "",
+        imageSize: 0,
+        imageData: "",
+        autoSendAfterInsert: false,
         useCount: 0,
         createdAt: new Date().toISOString(),
         lastUsedAt: undefined
@@ -938,9 +1247,15 @@ async function onApplyImportedRows() {
         next[idx] = {
           ...exist,
           title: row.title,
+          type: "text",
           shortcut: row.shortcut,
           category: row.category,
-          content: row.content
+          content: row.content,
+          imageName: "",
+          imageMime: "",
+          imageSize: 0,
+          imageData: "",
+          autoSendAfterInsert: false
         };
         currentByShortcut.set(exist.shortcutNormalized, next[idx]);
         updated += 1;
@@ -975,6 +1290,7 @@ function parseTsvRows(text) {
     }
     result.rows.push({
       title: (columns[0] || "未命名").trim(),
+      type: "text",
       shortcut: rawShortcut,
       shortcutNormalized: normalized,
       category: (columns[2] || "").trim(),
@@ -1831,16 +2147,23 @@ function normalizeSnippets(list) {
     .filter((item) => item && typeof item === "object")
     .map((item) => {
       const shortcut = String(item.shortcut || "");
+      const type = item.type === "image" ? "image" : "text";
       return {
         id: String(item.id || crypto.randomUUID()),
         title: String(item.title || "未命名"),
+        type,
         shortcut,
         shortcutNormalized: normalizeStoredShortcut(
           item.shortcutNormalized || shortcut,
           state.settings.triggerPrefixes
         ),
         category: String(item.category || ""),
-        content: String(item.content || ""),
+        content: type === "image" ? "" : String(item.content || ""),
+        imageName: type === "image" ? String(item.imageName || "") : "",
+        imageMime: type === "image" ? String(item.imageMime || "image/png") : "",
+        imageSize: type === "image" ? Number(item.imageSize || 0) : 0,
+        imageData: type === "image" ? String(item.imageData || "") : "",
+        autoSendAfterInsert: type === "image" && item.autoSendAfterInsert === true,
         useCount: Number(item.useCount || 0),
         createdAt: String(item.createdAt || new Date().toISOString()),
         lastUsedAt: item.lastUsedAt ? String(item.lastUsedAt) : undefined
@@ -2132,3 +2455,4 @@ function debounce(fn, wait) {
     timer = setTimeout(() => fn(...args), wait);
   };
 }
+

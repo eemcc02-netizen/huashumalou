@@ -1984,17 +1984,19 @@ async function handleKeydownEvent(event) {
   if (!uiState.visible || !uiState.suggestions.length) {
     return;
   }
-  if (!uiState.context || !currentTarget || currentTarget !== uiState.context.target) {
+  if (!uiState.context || !isSameEditableContext(currentTarget, uiState.context.target, event)) {
     return;
   }
   if (event.key === "ArrowDown") {
     event.preventDefault();
+    event.stopPropagation();
     uiState.activeIndex = (uiState.activeIndex + 1) % uiState.suggestions.length;
     renderSuggestionList();
     return;
   }
   if (event.key === "ArrowUp") {
     event.preventDefault();
+    event.stopPropagation();
     uiState.activeIndex = (uiState.activeIndex - 1 + uiState.suggestions.length) % uiState.suggestions.length;
     renderSuggestionList();
     return;
@@ -2005,13 +2007,53 @@ async function handleKeydownEvent(event) {
       return;
     }
     event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") {
+      event.stopImmediatePropagation();
+    }
     await applySnippet(snippet);
     return;
   }
   if (event.key === "Escape") {
     event.preventDefault();
+    event.stopPropagation();
     hidePanel();
   }
+}
+
+function isSameEditableContext(currentTarget, expectedTarget, event) {
+  if (!expectedTarget) return false;
+  if (currentTarget === expectedTarget) return true;
+  if (currentTarget instanceof Node && expectedTarget instanceof Node) {
+    if (expectedTarget.contains?.(currentTarget) || currentTarget.contains?.(expectedTarget)) {
+      return true;
+    }
+  }
+
+  const path = typeof event?.composedPath === "function" ? event.composedPath() : [];
+  if (Array.isArray(path) && path.includes(expectedTarget)) {
+    return true;
+  }
+
+  const activeEditable = getEditableTarget(document.activeElement);
+  if (activeEditable === expectedTarget) {
+    return true;
+  }
+  if (activeEditable instanceof Node && expectedTarget instanceof Node) {
+    if (expectedTarget.contains?.(activeEditable) || activeEditable.contains?.(expectedTarget)) {
+      return true;
+    }
+  }
+
+  if (expectedTarget.isContentEditable) {
+    const selection = window.getSelection();
+    const anchor = selection?.anchorNode;
+    if (anchor instanceof Node && expectedTarget.contains(anchor)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function handleQuickClickHotkey(event) {
@@ -2282,6 +2324,10 @@ async function applySnippet(snippet) {
     hidePanel();
     return;
   }
+  if (snippet.type === "image") {
+    await applyImageSnippet(snippet, target);
+    return;
+  }
   const content = String(snippet.content || "");
   const variables = extractVariables(content);
   const customVars = variables.filter((name) => !BUILTIN_VARIABLES.has(name));
@@ -2302,6 +2348,191 @@ async function applySnippet(snippet) {
     await increaseSnippetUse(snippet.id);
   }
   hidePanel();
+}
+
+async function applyImageSnippet(snippet, target) {
+  const context = uiState.context;
+  if (!snippet.imageData) {
+    hidePanel();
+    return;
+  }
+
+  const insertAnchor = getInsertFxAnchorFromContext(context);
+  replaceCurrentToken(target, context?.tokenLength || 0, "");
+  focusEditableTarget(target);
+
+  try {
+    const file = dataUrlToFile(snippet.imageData, snippet.imageName, snippet.imageMime);
+    let clipboardReady = false;
+    try {
+      await writeImageFileToClipboard(file);
+      clipboardReady = true;
+    } catch (clipboardError) {
+      console.warn("[nihao] image snippet clipboard write failed", clipboardError);
+    }
+
+    const pasteHandled = dispatchImagePaste(target, file);
+    const uploadHandled = pasteHandled ? false : insertImageFileViaUploadInput(target, file);
+    if (!clipboardReady && !pasteHandled && !uploadHandled) {
+      throw new Error("image snippet insert was not accepted by clipboard, paste event, or file input");
+    }
+    playInsertParticles(insertAnchor, "snippet");
+    await increaseSnippetUse(snippet.id);
+    hidePanel();
+
+    if (snippet.autoSendAfterInsert === true && settings.autoSendImageConfirm === true) {
+      scheduleImageSnippetAutoSendScan();
+    }
+  } catch (error) {
+    console.warn("[nihao] image snippet paste failed", error);
+    hidePanel();
+  }
+}
+
+function focusEditableTarget(target) {
+  if (target instanceof HTMLElement) {
+    target.focus();
+  }
+}
+
+function dataUrlToFile(dataUrl, fileName, mimeFallback = "image/png") {
+  const text = String(dataUrl || "");
+  const commaIndex = text.indexOf(",");
+  if (commaIndex < 0) {
+    throw new Error("invalid image dataURL");
+  }
+  const header = text.slice(0, commaIndex);
+  const mimeMatch = header.match(/^data:([^;]+);/i);
+  const mime = mimeMatch ? mimeMatch[1] : String(mimeFallback || "image/png");
+  const binary = atob(text.slice(commaIndex + 1));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new File([bytes], String(fileName || "image.png"), { type: mime });
+}
+
+async function writeImageFileToClipboard(file) {
+  if (!navigator.clipboard || typeof navigator.clipboard.write !== "function" || typeof ClipboardItem === "undefined") {
+    throw new Error("clipboard image write is not supported");
+  }
+  await navigator.clipboard.write([new ClipboardItem({ [file.type || "image/png"]: file })]);
+}
+
+function dispatchImagePaste(target, file) {
+  const transfer = new DataTransfer();
+  transfer.items.add(file);
+  let pasteEvent;
+  try {
+    pasteEvent = new ClipboardEvent("paste", {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      clipboardData: transfer
+    });
+  } catch (_error) {
+    pasteEvent = new ClipboardEvent("paste", {
+      bubbles: true,
+      cancelable: true,
+      composed: true
+    });
+  }
+  if (!pasteEvent.clipboardData || pasteEvent.clipboardData.files.length === 0) {
+    Object.defineProperty(pasteEvent, "clipboardData", {
+      value: transfer
+    });
+  }
+  let handled = !target.dispatchEvent(pasteEvent);
+  for (const receiver of getPasteEventReceivers(target)) {
+    if (receiver === target) continue;
+    let nextEvent;
+    try {
+      nextEvent = new ClipboardEvent("paste", {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        clipboardData: transfer
+      });
+    } catch (_error) {
+      nextEvent = new ClipboardEvent("paste", {
+        bubbles: true,
+        cancelable: true,
+        composed: true
+      });
+    }
+    if (!nextEvent.clipboardData || nextEvent.clipboardData.files.length === 0) {
+      Object.defineProperty(nextEvent, "clipboardData", {
+        value: transfer
+      });
+    }
+    handled = !receiver.dispatchEvent(nextEvent) || handled;
+  }
+  try {
+    document.execCommand("paste");
+  } catch (_error) {
+    // Synthetic paste is the primary path; execCommand is best effort for older pages.
+  }
+  return handled;
+}
+
+function getPasteEventReceivers(target) {
+  const receivers = [];
+  if (target instanceof Element) {
+    const scoped = target.closest(".styles_talkSend__gSe00, .sendBox___91cCZ, .chatInput___4ofR-, [class*='talkSend'], [class*='sendBox'], [class*='chatInput'], [class*='inputWrap']");
+    if (scoped) receivers.push(scoped);
+    if (target.parentElement) receivers.push(target.parentElement);
+  }
+  receivers.push(document, window);
+  return receivers.filter(Boolean);
+}
+
+function insertImageFileViaUploadInput(target, file) {
+  const input = findImageUploadInput(target);
+  if (!input) return false;
+  try {
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    input.files = transfer.files;
+    input.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+    return true;
+  } catch (error) {
+    console.warn("[nihao] image snippet upload input insert failed", error);
+    return false;
+  }
+}
+
+function findImageUploadInput(target) {
+  const scopes = [];
+  if (target instanceof Element) {
+    const composer = target.closest(".styles_talkSend__gSe00, .sendBox___91cCZ, .chatInput___4ofR-, [class*='talkSend'], [class*='sendBox'], [class*='chatInput']");
+    if (composer) scopes.push(composer);
+    let current = target.parentElement;
+    for (let depth = 0; current && depth < 8; depth += 1) {
+      scopes.push(current);
+      current = current.parentElement;
+    }
+  }
+  scopes.push(document);
+
+  for (const scope of scopes) {
+    const inputs = Array.from(scope.querySelectorAll ? scope.querySelectorAll("input[type='file']") : []);
+    const imageInput = inputs.find(isImageUploadInput);
+    if (imageInput) return imageInput;
+  }
+  return null;
+}
+
+function isImageUploadInput(input) {
+  const accept = String(input.getAttribute("accept") || "").toLowerCase();
+  if (!accept) return true;
+  return accept.includes("image/") || accept.includes(".jpg") || accept.includes(".jpeg") || accept.includes(".png") || accept.includes("jpg") || accept.includes("jpeg") || accept.includes("png");
+}
+
+function scheduleImageSnippetAutoSendScan() {
+  [120, 420, 900, 1400].forEach((delay) => {
+    setTimeout(scheduleAutoSendImageScan, delay);
+  });
 }
 
 function showAiCommandPreview(context, command) {
