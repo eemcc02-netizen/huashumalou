@@ -1977,34 +1977,40 @@ async function handleKeydownEvent(event) {
   if (settings.activated === false) {
     return;
   }
+  const currentTarget = getEventEditableTarget(event);
+  if (uiState.visible && uiState.suggestions.length) {
+    if (handleSuggestionPanelKeydown(event, currentTarget)) {
+      return;
+    }
+    return;
+  }
   if (handleQuickClickHotkey(event)) {
     return;
   }
-  const currentTarget = getEventEditableTarget(event);
-  if (!uiState.visible || !uiState.suggestions.length) {
-    return;
-  }
+}
+
+async function handleSuggestionPanelKeydown(event, currentTarget) {
   if (!uiState.context || !isSameEditableContext(currentTarget, uiState.context.target, event)) {
-    return;
+    return false;
   }
   if (event.key === "ArrowDown") {
     event.preventDefault();
     event.stopPropagation();
     uiState.activeIndex = (uiState.activeIndex + 1) % uiState.suggestions.length;
     renderSuggestionList();
-    return;
+    return true;
   }
   if (event.key === "ArrowUp") {
     event.preventDefault();
     event.stopPropagation();
     uiState.activeIndex = (uiState.activeIndex - 1 + uiState.suggestions.length) % uiState.suggestions.length;
     renderSuggestionList();
-    return;
+    return true;
   }
   if (event.key === "Enter") {
     const snippet = uiState.suggestions[uiState.activeIndex];
     if (!snippet || snippet.selectable === false) {
-      return;
+      return false;
     }
     event.preventDefault();
     event.stopPropagation();
@@ -2012,13 +2018,15 @@ async function handleKeydownEvent(event) {
       event.stopImmediatePropagation();
     }
     await applySnippet(snippet);
-    return;
+    return true;
   }
   if (event.key === "Escape") {
     event.preventDefault();
     event.stopPropagation();
     hidePanel();
+    return true;
   }
+  return false;
 }
 
 function isSameEditableContext(currentTarget, expectedTarget, event) {

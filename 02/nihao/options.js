@@ -9,7 +9,7 @@ const MAX_IMPORT_ROWS = 1000;
 const SNIPPET_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
 const VERSION_HISTORY = [
   {
-    version: "1.9.3",
+    version: "1.9.6",
     notes: "新增图片自动确认策略：支持‘自动发送’与‘回车发送’两种模式；popup 与设置页可直接切换并持久化。"
   },
   {

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "话术马喽（马喽版）",
-  "version": "1.9.3",
-  "version_name": "1.9.3 马喽版",
+  "version": "1.9.6",
+  "version_name": "1.9.6 马喽版",
   "description": "话术马喽（马喽版），提升沟通效率",
   "action": {
     "default_popup": "popup.html",
