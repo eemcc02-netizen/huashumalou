@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "话术马喽（马喽版）",
-  "version": "2.0.3",
-  "version_name": "2.0.3 马喽版",
+  "version": "2.0.7",
+  "version_name": "2.0.7 马喽版",
   "description": "话术马喽（马喽版），提升沟通效率",
   "action": {
     "default_popup": "popup.html",
@@ -20,7 +20,9 @@
     "scripting",
     "contextMenus",
     "alarms",
-    "sidePanel"
+    "sidePanel",
+    "tabs",
+    "clipboardWrite"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -52,6 +54,25 @@
       ],
       "js": [
         "shunfenger-content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://crm.tenclass.com/user/*"
+      ],
+      "js": [
+        "victim-malou-crm-content.js"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://docs.qq.com/*"
+      ],
+      "js": [
+        "victim-malou-clipboard.js",
+        "victim-malou-tencent-content.js"
       ],
       "run_at": "document_idle"
     }

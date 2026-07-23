@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const quickClickTip = document.getElementById("quick-click-tip");
   const quickClickList = document.getElementById("quick-click-list");
   const btnShunfengerLaunch = document.getElementById("btn-shunfenger-launch");
+  const btnVictimMalouLaunch = document.getElementById("btn-victim-malou-launch");
 
   let currentSettings = await loadCurrentSettings();
   let quickClickDraft = await loadQuickClickDraft();
@@ -139,6 +140,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (btnShunfengerLaunch) {
     btnShunfengerLaunch.addEventListener("click", async () => {
       await launchShunfenger();
+    });
+  }
+
+  if (btnVictimMalouLaunch) {
+    btnVictimMalouLaunch.addEventListener("click", async () => {
+      if (!(await ensureActivated())) return;
+      await chrome.tabs.create({ url: chrome.runtime.getURL("victim-malou.html") });
+      window.close();
     });
   }
 

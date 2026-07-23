@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>受害马喽 · 批量资料采集</title>
+  <link rel="stylesheet" href="victim-malou.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="page-header">
+      <div>
+        <div class="eyebrow">VICTIM MONKEY WORKBENCH</div>
+        <h1>受害马喽</h1>
+        <p>批量打开 CRM 用户页，采集昵称、ID 与真实头像，然后写入腾讯文档表格。</p>
+      </div>
+      <div class="version-chip">v2.0.7</div>
+    </header>
+
+    <section class="control-grid">
+      <article class="panel input-panel">
+        <div class="panel-heading">
+          <div>
+            <span class="step-index">01</span>
+            <h2>提供用户 ID</h2>
+          </div>
+          <span id="id-count" class="count-badge">0 个</span>
+        </div>
+        <textarea id="id-input" spellcheck="false" placeholder="每行一个 ID，也支持空格、逗号或从 Excel 直接粘贴&#10;&#10;9534254&#10;9534255"></textarea>
+        <div class="control-row">
+          <label>
+            <span>并发页面</span>
+            <input id="concurrency-select" class="number-input" type="number" value="2" min="1" max="10" step="1" inputmode="numeric">
+            <span>个</span>
+          </label>
+          <label class="check-control">
+            <input id="include-header" type="checkbox" checked>
+            <span>写入时包含表头</span>
+          </label>
+        </div>
+        <div class="button-row">
+          <button id="start-button" class="primary-button" type="button">开始采集</button>
+          <button id="stop-button" class="secondary-button" type="button" disabled>停止</button>
+        </div>
+      </article>
+
+      <article class="panel status-panel">
+        <div class="panel-heading">
+          <div>
+            <span class="step-index">02</span>
+            <h2>采集进度</h2>
+          </div>
+          <span id="run-state" class="state-badge idle">等待开始</span>
+        </div>
+        <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+        <div class="metric-grid">
+          <div><strong id="total-count">0</strong><span>总任务</span></div>
+          <div><strong id="success-count">0</strong><span>成功</span></div>
+          <div><strong id="failed-count">0</strong><span>失败</span></div>
+          <div><strong id="pending-count">0</strong><span>待处理</span></div>
+        </div>
+        <p id="status-message" class="status-message">输入 ID 后即可开始。</p>
+      </article>
+    </section>
+
+    <section class="panel result-panel">
+      <div class="panel-heading result-heading">
+        <div>
+          <span class="step-index">03</span>
+          <h2>采集结果</h2>
+        </div>
+        <div class="result-actions">
+          <button id="copy-all-button" class="secondary-button" type="button" disabled>复制全部</button>
+          <button id="write-docs-button" class="docs-button" type="button" disabled>写入腾讯文档</button>
+          <button id="clear-button" class="ghost-button" type="button">清空</button>
+        </div>
+      </div>
+      <div class="docs-hint">
+        写入前请在腾讯文档在线表格中选中起始单元格，并保持该文档标签页处于打开状态。
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>头像</th>
+              <th>昵称</th>
+              <th>ID</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody id="result-body">
+            <tr class="empty-row"><td colspan="5">暂无采集结果</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="victim-malou-clipboard.js"></script>
+  <script type="module" src="victim-malou.js"></script>
+</body>
+</html>

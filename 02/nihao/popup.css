@@ -30,16 +30,25 @@ body {
   box-shadow: 0 24px 54px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
-.shunfenger-launch {
+.tool-launch-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
   margin-bottom: 12px;
 }
 
-.btn-shunfenger-main {
+.btn-shunfenger-main,
+.btn-victim-malou-main {
   min-height: 42px;
   border-color: rgba(216,180,254,0.36);
   background: linear-gradient(135deg, rgba(124,58,237,0.32), rgba(59,130,246,0.18));
   color: #fff;
   font-weight: 800;
+}
+
+.btn-victim-malou-main {
+  border-color: rgba(251,191,36,0.34);
+  background: linear-gradient(135deg, rgba(245,158,11,0.22), rgba(236,72,153,0.18));
 }
 
 .header {
