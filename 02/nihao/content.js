@@ -1,4 +1,4 @@
-const STORAGE_KEYS = window.NihaoStorage.STORAGE_KEYS;
+﻿const STORAGE_KEYS = window.NihaoStorage.STORAGE_KEYS;
 const settingsLib = window.NihaoSettings;
 const storageLib = window.NihaoStorage;
 const panelLib = window.NihaoPanel;
@@ -310,7 +310,7 @@ function ensureMonkeyEyeButton(target) {
     event.stopPropagation();
     const text = (target.innerText || "").replace(/\s+/g, " ").trim();
     if (!text) {
-      showMonkeyToast("复制失败：未识别到猴名", true);
+      showMonkeyToast("复制失败：未识别到备注", true);
       return;
     }
     if (button.dataset.tbMonkeyEyeMode === "search") {
@@ -343,7 +343,7 @@ function setMonkeyEyeButtonMode(button, mode) {
   if (!(button instanceof HTMLButtonElement)) return;
   const isSearch = mode === "search";
   button.dataset.tbMonkeyEyeMode = isSearch ? "search" : "copy";
-  button.textContent = isSearch ? "搜索备注" : "复制备注";
+  button.textContent = isSearch ? "鎼滅储澶囨敞" : "澶嶅埗澶囨敞";
   button.style.border = isSearch
     ? "1px solid rgba(34,197,94,.35)"
     : "1px solid rgba(168,85,247,.35)";
@@ -483,7 +483,7 @@ function cleanupMonkeyRemarkQueryParam() {
 }
 
 function hasMonkeyRemarkLoginPrompt() {
-  if (/登录|扫码登录|企微扫码登录/.test((document.body?.innerText || "").replace(/\s+/g, ""))) {
+  if (/鐧诲綍|鎵爜鐧诲綍|浼佸井鎵爜鐧诲綍/.test((document.body?.innerText || "").replace(/\s+/g, ""))) {
     const modalCandidates = Array.from(document.querySelectorAll(".ant-modal, .ant-modal-root, [role='dialog'], .login-modal, .login-dialog"));
     if (modalCandidates.some((node) => node instanceof HTMLElement && isVisible(node))) {
       return true;
@@ -493,13 +493,13 @@ function hasMonkeyRemarkLoginPrompt() {
   return explicitCandidates.some((node) => {
     if (!(node instanceof HTMLElement) || !isVisible(node)) return false;
     const text = (node.innerText || "").replace(/\s+/g, "");
-    return text.includes("企微扫码登录") || text.includes("扫码登录");
+    return text.includes("浼佸井鎵爜鐧诲綍") || text.includes("鎵爜鐧诲綍");
   });
 }
 
 function getMonkeyRemarkSearchControls() {
   const fieldLabel = Array.from(document.querySelectorAll("span.ant-select-selection-item[title], span.ant-select-selection-item, .ant-select-selection-item"))
-    .find((node) => node instanceof HTMLElement && isVisible(node) && /^(用户ID|企微备注|企业微信备注)$/.test((node.getAttribute("title") || node.innerText || "").replace(/\s+/g, "")));
+    .find((node) => node instanceof HTMLElement && isVisible(node) && /^(鐢ㄦ埛ID|浼佸井澶囨敞|浼佷笟寰俊澶囨敞)$/.test((node.getAttribute("title") || node.innerText || "").replace(/\s+/g, "")));
   const fieldSelectRoot = fieldLabel instanceof HTMLElement
     ? (fieldLabel.closest(".ant-select") || fieldLabel.parentElement?.closest?.(".ant-select") || null)
     : null;
@@ -511,10 +511,10 @@ function getMonkeyRemarkSearchControls() {
       || fieldLabel
     )
     : null;
-  const input = Array.from(document.querySelectorAll("input.ant-input[placeholder='请输入'], input.ant-input, input[placeholder='请输入'], input[type='text']"))
+  const input = Array.from(document.querySelectorAll("input.ant-input[placeholder='璇疯緭鍏?], input.ant-input, input[placeholder='璇疯緭鍏?], input[type='text']"))
     .find((node) => node instanceof HTMLInputElement && isVisible(node));
   const searchButton = Array.from(document.querySelectorAll("button.ant-input-search-button, button.ant-btn.ant-btn-primary.ant-input-search-button, button.ant-btn-primary, button"))
-    .find((node) => node instanceof HTMLButtonElement && isVisible(node) && (node.innerText || "").replace(/\s+/g, "") === "搜索");
+    .find((node) => node instanceof HTMLButtonElement && isVisible(node) && (node.innerText || "").replace(/\s+/g, "") === "鎼滅储");
   if (
     !(fieldLabel instanceof HTMLElement) ||
     !(fieldTrigger instanceof HTMLElement) ||
@@ -537,8 +537,8 @@ function getMonkeyRemarkFieldText(fieldLabel) {
 }
 
 function getMonkeyRemarkOption(targetLabel) {
-  const labels = targetLabel === "企微备注"
-    ? ["企微备注", "企业微信备注"]
+  const labels = targetLabel === "浼佸井澶囨敞"
+    ? ["浼佸井澶囨敞", "浼佷笟寰俊澶囨敞"]
     : [targetLabel];
   const optionCandidates = Array.from(document.querySelectorAll(".ant-select-item-option, .ant-select-item-option-content, [title]"));
   const option = optionCandidates.find((node) => {
@@ -592,11 +592,11 @@ function probeMonkeyRemarkSearchStructure() {
     .filter((node) => node instanceof HTMLElement && isVisible(node))
     .map((node) => (node.getAttribute("title") || node.innerText || "").replace(/\s+/g, ""))
     .filter(Boolean);
-  const optionCandidates = Array.from(document.querySelectorAll(".ant-select-item-option, .ant-select-item-option-content, [title='企微备注'], [title='企业微信备注']"))
+  const optionCandidates = Array.from(document.querySelectorAll(".ant-select-item-option, .ant-select-item-option-content, [title='浼佸井澶囨敞'], [title='浼佷笟寰俊澶囨敞']"))
     .filter((node) => node instanceof HTMLElement && isVisible(node))
     .map((node) => (node.getAttribute("title") || node.innerText || "").replace(/\s+/g, ""))
     .filter(Boolean);
-  const inputCount = Array.from(document.querySelectorAll("input.ant-input, input[placeholder='请输入'], input[type='text']"))
+  const inputCount = Array.from(document.querySelectorAll("input.ant-input, input[placeholder='璇疯緭鍏?], input[type='text']"))
     .filter((node) => node instanceof HTMLInputElement && isVisible(node)).length;
   const buttonTexts = Array.from(document.querySelectorAll("button"))
     .filter((node) => node instanceof HTMLButtonElement && isVisible(node))
@@ -648,7 +648,7 @@ async function executeMonkeyRemarkSearchWorkflow(remark) {
     intervalMs: 300,
     stage: "wait_user_id",
     pendingMessage: "正在等待 CRM 出现“用户ID”字段...",
-    timeoutMessage: "10秒内未识别到“用户ID”字段，已停止备注搜索。"
+    timeoutMessage: "10 秒内未识别到“用户ID”字段，已停止备注搜索。"
   });
 
   const remarkControls = await ensureMonkeyRemarkSearchField(userIdControls, "企微备注");
@@ -971,26 +971,26 @@ function ensureChangeHelperUI() {
   wrapper.className = "panel";
   wrapper.innerHTML = `
     <div class="header" data-role="drag">
-      <div class="title">异动处理</div>
+      <div class="title">寮傚姩澶勭悊</div>
       <div class="actions">
-        <button type="button" class="action" id="tb-change-capture">获取名字</button>
-        <button type="button" class="close" id="tb-change-close">关闭</button>
+        <button type="button" class="action" id="tb-change-capture">鑾峰彇鍚嶅瓧</button>
+        <button type="button" class="close" id="tb-change-close">鍏抽棴</button>
       </div>
     </div>
     <div class="body">
-      <div class="tip">悬浮窗与猴目备忘录一致，可拖拽；支持变量模板自动替换与复制。</div>
+      <div class="tip">鎮诞绐椾笌鐚寸洰澶囧繕褰曚竴鑷达紝鍙嫋鎷斤紱鏀寔鍙橀噺妯℃澘鑷姩鏇挎崲涓庡鍒躲€?/div>
       <div class="status" id="tb-change-status"></div>
       <div class="form">
-        <label>名字<input id="tb-change-name" type="text" placeholder="请输入名字"></label>
-        <label>课程<input id="tb-change-course" type="text" placeholder="请输入课程"></label>
-        <label>金额<input id="tb-change-amount" type="text" placeholder="请输入金额"></label>
+        <label>鍚嶅瓧<input id="tb-change-name" type="text" placeholder="璇疯緭鍏ュ悕瀛?></label>
+        <label>璇剧▼<input id="tb-change-course" type="text" placeholder="璇疯緭鍏ヨ绋?></label>
+        <label>閲戦<input id="tb-change-amount" type="text" placeholder="璇疯緭鍏ラ噾棰?></label>
       </div>
       <div class="toolbar">
-        <button type="button" class="action" id="tb-change-compose">小作文</button>
-        <button type="button" class="action" id="tb-change-copy-preview">复制预览</button>
+        <button type="button" class="action" id="tb-change-compose">灏忎綔鏂?/button>
+        <button type="button" class="action" id="tb-change-copy-preview">澶嶅埗棰勮</button>
       </div>
-      <div class="variables">可用变量：<code>{{名字}}</code> <code>{{课程}}</code> <code>{{金额}}</code>，也兼容 <code>{{name}}</code> <code>{{course}}</code> <code>{{amount}}</code>。</div>
-      <textarea id="tb-change-preview" class="preview" placeholder="这里会显示生成后的异动处理文本。"></textarea>
+      <div class="variables">鍙敤鍙橀噺锛?code>{{鍚嶅瓧}}</code> <code>{{璇剧▼}}</code> <code>{{閲戦}}</code>锛屼篃鍏煎 <code>{{name}}</code> <code>{{course}}</code> <code>{{amount}}</code>銆?/div>
+      <textarea id="tb-change-preview" class="preview" placeholder="杩欓噷浼氭樉绀虹敓鎴愬悗鐨勫紓鍔ㄥ鐞嗘枃鏈€?></textarea>
     </div>
   `;
   shadow.appendChild(style);
@@ -1288,14 +1288,14 @@ function ensureMonkeyMemoUI() {
   wrapper.className = "memo";
   wrapper.innerHTML = `
     <div class="memo-header" data-role="drag">
-      <div class="memo-title">猴名备忘录</div>
+      <div class="memo-title">鐚村悕澶囧繕褰?/div>
       <div class="memo-actions">
-        <button type="button" class="memo-action" id="tb-memo-capture">获取猴名</button>
-        <button type="button" class="memo-close" id="tb-memo-close">关闭</button>
+        <button type="button" class="memo-action" id="tb-memo-capture">鑾峰彇鐚村悕</button>
+        <button type="button" class="memo-close" id="tb-memo-close">鍏抽棴</button>
       </div>
     </div>
     <div class="memo-body">
-      <div class="memo-tip">点击“获取猴名”后，会优先读取当前选中的名字，其次识别聊天标题中的 span 文本。</div>
+      <div class="memo-tip">鐐瑰嚮鈥滆幏鍙栫尨鍚嶁€濆悗锛屼細浼樺厛璇诲彇褰撳墠閫変腑鐨勫悕瀛楋紝鍏舵璇嗗埆鑱婂ぉ鏍囬涓殑 span 鏂囨湰銆?/div>
       <div class="memo-status" id="tb-memo-status"></div>
       <div class="memo-list" id="tb-memo-list"></div>
     </div>
@@ -1331,7 +1331,7 @@ function renderMonkeyMemo(statusText = "") {
   if (!monkeyMemoState.items.length) {
     const empty = document.createElement("div");
     empty.className = "memo-empty";
-    empty.textContent = "还没有记录猴名，先点一次“获取猴名”。";
+    empty.textContent = "还没有记录名称，先点一次“获取名称”。";
     list.appendChild(empty);
   } else {
     monkeyMemoState.items.forEach((item) => {
@@ -1367,12 +1367,12 @@ function renderMonkeyMemo(statusText = "") {
 async function captureMonkeyNameIntoMemo() {
   const monkeyName = resolveMonkeyNameFromPage();
   if (!monkeyName) {
-    renderMonkeyMemo("未识别到猴名，请先选中名字对应的 span 或切到聊天页标题。");
+    renderMonkeyMemo("未识别到名称，请先选中名称对应的 span 或切到聊天页标题。");
     return;
   }
   const existing = monkeyMemoState.items.find((item) => item.name === monkeyName);
   if (existing) {
-    renderMonkeyMemo(`“${monkeyName}” 已在备忘录中。`);
+    renderMonkeyMemo(`“${monkeyName}”已在备忘录中。`);
     return;
   }
   monkeyMemoState.items.unshift({
@@ -1381,7 +1381,7 @@ async function captureMonkeyNameIntoMemo() {
     done: false
   });
   await persistMonkeyMemoItems();
-  renderMonkeyMemo(`已加入猴名：${monkeyName}`);
+  renderMonkeyMemo(`已加入名称：${monkeyName}`);
 }
 
 function resolveMonkeyNameFromPage() {
@@ -1422,17 +1422,17 @@ async function deleteMonkeyMemoItem(itemId) {
   const target = monkeyMemoState.items.find((item) => item.id === itemId);
   monkeyMemoState.items = monkeyMemoState.items.filter((item) => item.id !== itemId);
   await persistMonkeyMemoItems();
-  renderMonkeyMemo(target ? `已删除猴名：${target.name}` : "");
+  renderMonkeyMemo(target ? `已删除名称：${target.name}` : "");
 }
 
 async function copyMonkeyMemoItem(itemId) {
   const target = monkeyMemoState.items.find((item) => item.id === itemId);
   if (!target || !target.name) {
-    renderMonkeyMemo("未找到可复制的猴名。");
+    renderMonkeyMemo("未找到可复制的名称。");
     return;
   }
   const ok = await copyToClipboard(target.name);
-  renderMonkeyMemo(ok ? `已复制猴名：${target.name}` : `复制失败：${target.name}`);
+  renderMonkeyMemo(ok ? `已复制名称：${target.name}` : `复制失败：${target.name}`);
 }
 
 async function persistMonkeyMemoItems() {
@@ -1533,8 +1533,8 @@ function ensureMonkeyImageOverlay() {
   wrapper.className = "overlay";
   wrapper.innerHTML = `
     <div class="card">
-      <button type="button" class="close" aria-label="close">×</button>
-      <img alt="话术马喽马喽版" src="${MONKEY_IMAGE_URL}">
+      <button type="button" class="close" aria-label="close">脳</button>
+      <img alt="璇濇湳椹柦椹柦鐗? src="${MONKEY_IMAGE_URL}">
     </div>
   `;
   shadow.appendChild(style);
@@ -1751,7 +1751,7 @@ function findImageConfirmModal() {
     if (!(modal instanceof HTMLElement)) continue;
     if (!isVisible(modal)) continue;
     const modalText = (modal.innerText || "").replace(/\s+/g, "");
-    const hasImageHint = modal.querySelector("img") || /图片|发送图片|预览/.test(modalText);
+    const hasImageHint = modal.querySelector("img") || /鍥剧墖|鍙戦€佸浘鐗噟棰勮/.test(modalText);
     if (!hasImageHint) continue;
     return modal;
   }
@@ -1775,8 +1775,10 @@ function collectConversationFromPage() {
 }
 
 function getAiConfigFromSettings() {
-  const defaults = miniMax && miniMax.getDefaultConfig ? miniMax.getDefaultConfig() : null;
+  const defaults = miniMax.getDefaultConfig?.() || miniMax.DEFAULT_CONFIG;
   if (!defaults) return null;
+  const defaultReplyPrompt = "以下是聊天上下文：\n{{context}}\n\n请输出 {{count}} 条回复建议，要求：\n1) 每条一句话，口语自然；\n2) 语气礼貌；\n3) 不要编造事实；\n4) 每条前加序号。";
+  const defaultReplyPromptWithIntent = "以下是聊天上下文：\n{{context}}\n\n{{intent_block}}请输出 {{count}} 条回复建议，要求：\n1) 优先满足额外要求；\n2) 每条一句话，口语自然；\n3) 语气礼貌；\n4) 不要编造事实；\n5) 每条前加序号。";
   return {
     apiFormat: settings.aiApiFormat === "anthropic" ? "anthropic" : "openai",
     apiHostPreset: ["minimax-cn", "minimax-global", "deepseek", "volcengine"].includes(settings.aiApiHostPreset)
@@ -1788,11 +1790,10 @@ function getAiConfigFromSettings() {
     suggestCount: Number(settings.aiSuggestCount || defaults.suggestCount),
     argumentSeparator: getAiArgumentSeparator(),
     systemPrompt: String(settings.aiSystemPrompt || defaults.systemPrompt).trim(),
-    replyPrompt: String(settings.aiReplyPrompt || "以下是聊天上下文：\n{{context}}\n\n请输出 {{count}} 条回复建议，要求：\n1) 每条一句，口语自然；\n2) 语气礼貌；\n3) 不要编造事实；\n4) 每条前加序号。").trim(),
-    replyPromptWithIntent: String(settings.aiReplyPromptWithIntent || "以下是聊天上下文：\n{{context}}\n\n{{intent_block}}请输出 {{count}} 条回复建议，要求：\n1) 优先满足额外要求；\n2) 每条一句，口语自然；\n3) 语气礼貌；\n4) 不要编造事实；\n5) 每条前加序号。").trim()
+    replyPrompt: String(settings.aiReplyPrompt || defaultReplyPrompt).trim(),
+    replyPromptWithIntent: String(settings.aiReplyPromptWithIntent || defaultReplyPromptWithIntent).trim()
   };
 }
-
 function getAiReplyBranches() {
   return Array.isArray(settings.aiReplyBranches) ? settings.aiReplyBranches : [];
 }
@@ -1810,7 +1811,7 @@ function buildConversationPrompt(messages, suggestCount, templateStr, intentText
   const intent = String(intentText || "").trim();
   const intentBlock = intent ? `额外要求：\n${intent}\n\n` : "";
 
-  const template = templateStr || "以下是聊天上下文：\n{{context}}\n\n{{intent_block}}请输出 {{count}} 条回复建议，要求：\n1) 每条一句，口语自然；\n2) 语气礼貌；\n3) 不要编造事实；\n4) 每条前加序号。";
+  const template = templateStr || "以下是聊天上下文：\n{{context}}\n\n{{intent_block}}请输出 {{count}} 条回复建议，要求：\n1) 每条一句话，口语自然；\n2) 语气礼貌；\n3) 不要编造事实；\n4) 每条前加序号。";
 
   return template
     .replace(/\{\{context\}\}/g, conversationText)
@@ -1826,10 +1827,9 @@ function buildAiPolishPrompt(sourceText, suggestCount) {
   return (
     `请基于系统要求处理下面这段原始话术：\n${String(sourceText || "").trim()}\n\n` +
     `请输出 ${count} 条不同风格的结果，要求：\n` +
-    "1) 每条一句；\n2) 保持原意，不编造事实；\n3) 可直接发送；\n4) 每条前加序号。"
+    "1) 每条一句话；\n2) 保持原意，不编造事实；\n3) 可直接发送；\n4) 每条前加序号。"
   );
 }
-
 function compactMessages(messages, maxMessages, maxChars) {
   const list = Array.isArray(messages) ? messages : [];
   const result = [];
@@ -1857,14 +1857,14 @@ function compactMessages(messages, maxMessages, maxChars) {
 
 async function requestWithFallback(aiConfig, userPrompt) {
   if (!aiConfig.apiKey) {
-    throw new Error("请先配置 AI API Key");
+    throw new Error("璇峰厛閰嶇疆 AI API Key");
   }
   const response = await chrome.runtime.sendMessage({
     type: "tb-ai-generate",
     payload: { aiConfig, userPrompt }
   });
   if (!response || response.ok !== true) {
-    throw new Error(response?.error || "AI 请求失败");
+    throw new Error(response?.error || "AI 璇锋眰澶辫触");
   }
   return response.data;
 }
@@ -1927,7 +1927,7 @@ function handleInputEvent(event) {
 
   let matched = snippets
     .filter((item) => {
-      // After typing only the trigger prefix (e.g. "/" / "、"), show suggestions directly.
+      // After typing only the trigger prefix (e.g. "/" / "銆?), show suggestions directly.
       if (!queryNormalized) return true;
       return matchesQuery(item.shortcutNormalized, queryNormalized, settings.matchMode);
     })
@@ -2124,7 +2124,6 @@ function executeQuickClickRule(rule) {
   showQuickClickToast("已执行快捷点击");
   return { ok: true };
 }
-
 function findQuickClickTarget(rule) {
   if (rule?.mode === "coordinate") {
     const x = clampNumber(rule.x, 0, window.innerWidth - 1, 0);
@@ -2563,7 +2562,7 @@ function showAiCommandPreview(context, command) {
         kind: "system",
         title: command.emptyHint,
         shortcut: command.shortcutDisplay,
-        category: "AI指令",
+        category: "AI鎸囦护",
         content: "",
         selectable: false
       }
@@ -2578,7 +2577,7 @@ async function handleAiReplySuggest(context, command) {
   uiState.suggestions = [
     {
       kind: "system",
-      title: `正在生成 ${command.title}...`,
+      title: `姝ｅ湪鐢熸垚 ${command.title}...`,
       shortcut: command.shortcutDisplay,
       category: command.resultCategory,
       content: "",
@@ -2655,7 +2654,7 @@ async function handleAiReplySuggest(context, command) {
     uiState.suggestions = [
       {
         kind: "system",
-        title: `AI 建议生成失败：${String(error?.message || "未知错误").slice(0, 80)}`,
+        title: `AI 寤鸿鐢熸垚澶辫触锛?{String(error?.message || "鏈煡閿欒").slice(0, 80)}`,
         shortcut: command.shortcutDisplay,
         category: command.resultCategory,
         content: "",
@@ -2673,7 +2672,7 @@ async function handleAiExtensionSuggest(context, command) {
   uiState.suggestions = [
     {
       kind: "system",
-      title: `正在执行 ${command.title}...`,
+      title: `姝ｅ湪鎵ц ${command.title}...`,
       shortcut: command.shortcutDisplay,
       category: command.resultCategory,
       content: "",
@@ -2756,7 +2755,7 @@ async function handleAiExtensionSuggest(context, command) {
     uiState.suggestions = [
       {
         kind: "system",
-        title: `AI 执行失败：${String(error?.message || "未知错误").slice(0, 80)}`,
+        title: `AI 鎵ц澶辫触锛?{String(error?.message || "鏈煡閿欒").slice(0, 80)}`,
         shortcut: command.shortcutDisplay,
         category: command.resultCategory,
         content: "",
@@ -2900,9 +2899,9 @@ function extractAiExtensionCommand(query) {
     prompt: rule.prompt,
     shortcutDisplay: `${keyword}${getAiArgumentSeparator()}`,
     previewTitle: sourceText,
-    previewCategory: "按 Enter 执行扩展",
-    resultCategory: `AI扩展 · ${rule.title}`,
-    emptyHint: `请输入要处理的话术，例如 /${keyword}${getAiArgumentSeparator()}你好同学`
+    previewCategory: "鎸?Enter 鎵ц鎵╁睍",
+    resultCategory: `AI鎵╁睍 路 ${rule.title}`,
+    emptyHint: `璇疯緭鍏ヨ澶勭悊鐨勮瘽鏈紝渚嬪 /${keyword}${getAiArgumentSeparator()}浣犲ソ鍚屽`
   };
 }
 
@@ -3912,7 +3911,7 @@ function collectCustomVariables(names) {
     modal.style.padding = "16px";
     modal.style.boxShadow = "0 10px 28px rgba(0,0,0,.2)";
     modal.style.font = "14px/1.4 -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif";
-    modal.innerHTML = `<h3 style="margin:0 0 12px 0;font-size:16px;">请填写变量</h3>`;
+    modal.innerHTML = `<h3 style="margin:0 0 12px 0;font-size:16px;">璇峰～鍐欏彉閲?/h3>`;
 
     const inputs = {};
     names.forEach((name) => {
@@ -3938,7 +3937,7 @@ function collectCustomVariables(names) {
 
     const cancel = document.createElement("button");
     cancel.type = "button";
-    cancel.textContent = "取消";
+    cancel.textContent = "鍙栨秷";
     cancel.style.padding = "6px 10px";
     cancel.style.border = "1px solid #ddd";
     cancel.style.background = "#fff";
@@ -3946,7 +3945,7 @@ function collectCustomVariables(names) {
 
     const confirm = document.createElement("button");
     confirm.type = "button";
-    confirm.textContent = "确认";
+    confirm.textContent = "纭";
     confirm.style.padding = "6px 10px";
     confirm.style.border = "1px solid #1677ff";
     confirm.style.background = "#1677ff";
@@ -4081,3 +4080,6 @@ function debounce(fn, wait) {
     timer = setTimeout(() => fn(...args), wait);
   };
 }
+
+
+

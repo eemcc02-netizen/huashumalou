@@ -220,6 +220,12 @@ code {
   padding-left: 8px;
 }
 
+.section-title-note {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
 .section-gap {
   margin-top: 40px;
 }
@@ -298,6 +304,103 @@ code {
 
 .quick-click-table-wrap {
   margin-top: 18px;
+}
+
+.shunfenger-settings-card {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.13), rgba(14, 165, 233, 0.08));
+}
+
+.sf-section-block {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+}
+
+.sf-section-block .section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-left: 0;
+}
+
+.sf-section-block .section-title h2 {
+  margin: 0;
+}
+
+.sf-rows {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.sf-row {
+  display: grid;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+}
+
+.sf-account-row {
+  grid-template-columns: 82px minmax(180px, 0.9fr) minmax(260px, 1.4fr) 42px;
+}
+
+.sf-level-row {
+  grid-template-columns: minmax(150px, 0.9fr) minmax(120px, 0.8fr) 72px minmax(120px, 0.7fr) 42px;
+}
+
+.sf-keyword-row {
+  grid-template-columns: 82px minmax(180px, 1fr) minmax(180px, 1fr) 150px 42px;
+}
+
+.sf-row label {
+  min-width: 0;
+}
+
+.sf-row label:not(.checkbox) {
+  gap: 6px;
+}
+
+.sf-row input,
+.sf-row select {
+  width: 100%;
+  min-width: 0;
+}
+
+.sf-row input[type="color"] {
+  width: 54px;
+  height: 42px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.sf-level-preview {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+}
+
+.sf-row .checkbox {
+  margin-top: 0;
+  min-height: 44px;
+}
+
+.sf-row-remove {
+  width: 42px;
+  min-height: 42px;
+  padding: 0;
+  color: #ffe4e6;
+  border-color: rgba(251, 113, 133, 0.24);
+  background: rgba(244, 63, 94, 0.1);
 }
 
 .quick-click-target {
@@ -417,6 +520,10 @@ label {
 }
 
 label.full {
+  grid-column: 1 / -1;
+}
+
+.form-grid > .full {
   grid-column: 1 / -1;
 }
 
@@ -1100,7 +1207,10 @@ input[type="checkbox"] {
   .form-grid,
   .filter-grid,
   .fx-settings-split,
-  .usage-stats-grid {
+  .usage-stats-grid,
+  .sf-account-row,
+  .sf-level-row,
+  .sf-keyword-row {
     grid-template-columns: 1fr;
   }
 

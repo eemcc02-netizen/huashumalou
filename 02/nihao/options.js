@@ -6,8 +6,21 @@
 };
 
 const MAX_IMPORT_ROWS = 1000;
-const SNIPPET_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+const SNIPPET_IMAGE_MAX_BYTES = 10 * 1024 * 1024;
+const DEFAULT_SHUNFENGER_LEVELS = [
+  { id: "high", label: "高意向", color: "#f472b6" },
+  { id: "medium", label: "中意向", color: "#a855f7" },
+  { id: "low", label: "低意向", color: "#60a5fa" }
+];
 const VERSION_HISTORY = [
+  {
+    version: "2.0.3",
+    notes: "图片话术支持 10MB 以内图片；顺风耳意向等级支持自定义名称与颜色。"
+  },
+  {
+    version: "2.0.0",
+    notes: "新增顺风耳 SCRM 监听模块：popup 提供启动入口，启动后打开原顺风耳侧边栏。"
+  },
   {
     version: "1.9.6",
     notes: "新增图片自动确认策略：支持‘自动发送’与‘回车发送’两种模式；popup 与设置页可直接切换并持久化。"
@@ -152,6 +165,8 @@ let state = {
   }
 };
 let imageDraft = null;
+let shunfengerConfig = null;
+let shunfengerSnapshot = null;
 
 const el = {};
 
@@ -169,6 +184,7 @@ async function bootstrap() {
   applyFiltersAndRender();
   fillSettingsForm();
   renderVersionInfo();
+  await refreshShunfengerSettings();
   bindStorageWatchers();
 }
 
@@ -213,6 +229,20 @@ function collectElements() {
   el.settingsForm = document.getElementById("settings-form");
   el.aiSettingsForm = document.getElementById("ai-settings-form");
   el.changeHelperForm = document.getElementById("change-helper-form");
+  el.shunfengerForm = document.getElementById("shunfenger-settings-form");
+  el.sfRunningStatus = document.getElementById("sf-running-status");
+  el.sfStatusTip = document.getElementById("sf-status-tip");
+  el.sfPollInterval = document.getElementById("sf-poll-interval");
+  el.sfPageSize = document.getElementById("sf-page-size");
+  el.sfShowAllUnread = document.getElementById("sf-show-all-unread");
+  el.sfAccountRows = document.getElementById("sf-account-rows");
+  el.sfLevelRows = document.getElementById("sf-level-rows");
+  el.sfKeywordRows = document.getElementById("sf-keyword-rows");
+  el.sfBtnAddLevel = document.getElementById("sf-btn-add-level");
+  el.sfBtnAddKeyword = document.getElementById("sf-btn-add-keyword");
+  el.sfBtnImportAccounts = document.getElementById("sf-btn-import-accounts");
+  el.sfBtnOpenPanel = document.getElementById("sf-btn-open-panel");
+  el.sfSettingsTip = document.getElementById("sf-settings-tip");
   el.triggerPrefixes = document.getElementById("trigger-prefixes");
   el.defaultSignature = document.getElementById("default-signature");
   el.monkeyEyeEnabled = document.getElementById("monkey-eye-enabled");
@@ -378,6 +408,37 @@ function bindEvents() {
   }
   if (el.changeHelperForm) {
     el.changeHelperForm.addEventListener("submit", onSaveSettings);
+  }
+  if (el.shunfengerForm) {
+    el.shunfengerForm.addEventListener("submit", onSaveShunfengerSettings);
+  }
+  if (el.sfBtnAddKeyword) {
+    el.sfBtnAddKeyword.addEventListener("click", () => {
+      shunfengerConfig.keywords.push(createShunfengerKeyword());
+      renderShunfengerSettings();
+    });
+  }
+  if (el.sfBtnAddLevel) {
+    el.sfBtnAddLevel.addEventListener("click", () => {
+      shunfengerConfig.levels.push(createShunfengerLevel());
+      renderShunfengerSettings();
+    });
+  }
+  if (el.sfBtnImportAccounts) {
+    el.sfBtnImportAccounts.addEventListener("click", importShunfengerAccounts);
+  }
+  if (el.sfBtnOpenPanel) {
+    el.sfBtnOpenPanel.addEventListener("click", openShunfengerPanel);
+  }
+  if (el.sfAccountRows) {
+    el.sfAccountRows.addEventListener("click", onShunfengerRowsClick);
+  }
+  if (el.sfLevelRows) {
+    el.sfLevelRows.addEventListener("click", onShunfengerRowsClick);
+    el.sfLevelRows.addEventListener("input", onShunfengerLevelInput);
+  }
+  if (el.sfKeywordRows) {
+    el.sfKeywordRows.addEventListener("click", onShunfengerRowsClick);
   }
   if (el.btnResetAi) {
     el.btnResetAi.addEventListener("click", onResetAiSettings);
@@ -684,7 +745,7 @@ function onSnippetImageFileChange(event) {
     return;
   }
   if (file.size > SNIPPET_IMAGE_MAX_BYTES) {
-    setTip(el.formTip, "图片超过 2MB，请先压缩后上传", true);
+    setTip(el.formTip, "图片超过 10MB，请先压缩后上传", true);
     if (el.imageUpload) {
       el.imageUpload.value = "";
     }
@@ -2106,6 +2167,358 @@ function renderVersionInfo() {
       `<div><strong>${item.version}</strong> · ${escapeHtml(item.notes)}</div>`
     )).join("");
   }
+}
+
+async function refreshShunfengerSettings() {
+  if (!el.shunfengerForm) return;
+  const response = await sendShunfengerRequest({ type: "GET_PANEL_SNAPSHOT" });
+  if (response?.ok && response.snapshot) {
+    shunfengerSnapshot = response.snapshot;
+    shunfengerConfig = normalizeShunfengerConfig(response.snapshot.config || {});
+    if (!shunfengerConfig.accounts.length && Array.isArray(response.snapshot.state?.accounts)) {
+      shunfengerConfig.accounts = response.snapshot.state.accounts.map(normalizeShunfengerAccount).filter((item) => item.wxid);
+    }
+    renderShunfengerSettings();
+    return;
+  }
+  shunfengerConfig = normalizeShunfengerConfig({});
+  renderShunfengerSettings();
+  setTip(el.sfSettingsTip, response?.error || "顺风耳配置读取失败。", true);
+}
+
+function renderShunfengerSettings() {
+  if (!shunfengerConfig) shunfengerConfig = normalizeShunfengerConfig({});
+  const snapshotState = shunfengerSnapshot?.state || {};
+  if (el.sfRunningStatus) {
+    const running = snapshotState.running === true || shunfengerConfig.running === true;
+    el.sfRunningStatus.textContent = running ? "监听中" : "未启动";
+    el.sfRunningStatus.style.color = running ? "#34d399" : "#f472b6";
+  }
+  if (el.sfStatusTip) {
+    const leadCount = snapshotState.leadCount || shunfengerSnapshot?.leads?.length || 0;
+    const accountCount = snapshotState.activeAccountCount || shunfengerConfig.accounts.filter((item) => item.enabled !== false).length;
+    el.sfStatusTip.textContent = `当前账号 ${accountCount} 个，线索 ${leadCount} 条。`;
+  }
+  if (el.sfPollInterval) el.sfPollInterval.value = shunfengerConfig.pollIntervalSeconds;
+  if (el.sfPageSize) el.sfPageSize.value = shunfengerConfig.pageSize;
+  if (el.sfShowAllUnread) el.sfShowAllUnread.checked = shunfengerConfig.showAllUnread === true;
+  renderShunfengerAccountRows();
+  renderShunfengerLevelRows();
+  renderShunfengerKeywordRows();
+}
+
+function renderShunfengerAccountRows() {
+  if (!el.sfAccountRows) return;
+  if (!shunfengerConfig.accounts.length) {
+    el.sfAccountRows.innerHTML = '<div class="tip">暂无监听账号，可在 SCRM 页面点击“导入当前分组账号”。</div>';
+    return;
+  }
+  el.sfAccountRows.innerHTML = shunfengerConfig.accounts.map((account, index) => `
+    <div class="sf-row sf-account-row" data-sf-account-index="${index}">
+      <label class="checkbox">
+        <input type="checkbox" data-field="enabled" ${account.enabled !== false ? "checked" : ""} />
+        启用
+      </label>
+      <label>
+        显示名称
+        <input type="text" data-field="label" value="${escapeAttr(account.label || "")}" placeholder="老师名称" />
+      </label>
+      <label>
+        wxid
+        <input type="text" data-field="wxid" value="${escapeAttr(account.wxid || "")}" placeholder="teacher wxid" />
+      </label>
+      <button class="sf-row-remove" type="button" data-action="remove-account">删</button>
+    </div>
+  `).join("");
+}
+
+function renderShunfengerLevelRows() {
+  if (!el.sfLevelRows) return;
+  if (!shunfengerConfig.levels.length) {
+    el.sfLevelRows.innerHTML = '<div class="tip">暂无意向等级。</div>';
+    return;
+  }
+  el.sfLevelRows.innerHTML = shunfengerConfig.levels.map((level, index) => `
+    <div class="sf-row sf-level-row" data-sf-level-index="${index}">
+      <label>
+        等级名称
+        <input type="text" data-field="label" value="${escapeAttr(level.label || "")}" placeholder="例如：超高意向" />
+      </label>
+      <label>
+        等级标识
+        <input type="text" data-field="id" value="${escapeAttr(level.id || "")}" placeholder="例如：very-high" />
+      </label>
+      <label>
+        颜色
+        <input type="color" data-field="color" value="${escapeAttr(normalizeHexColor(level.color, "#a855f7"))}" />
+      </label>
+      <div class="sf-level-preview" style="background: ${escapeAttr(normalizeHexColor(level.color, "#a855f7"))};">${escapeHtml(level.label || "意向等级")}</div>
+      <button class="sf-row-remove" type="button" data-action="remove-level">删</button>
+    </div>
+  `).join("");
+}
+
+function renderShunfengerKeywordRows() {
+  if (!el.sfKeywordRows) return;
+  if (!shunfengerConfig.keywords.length) {
+    el.sfKeywordRows.innerHTML = '<div class="tip">暂无关键词规则。</div>';
+    return;
+  }
+  const levelOptions = shunfengerConfig.levels.map((level) => ({ id: level.id, label: level.label || level.id }));
+  el.sfKeywordRows.innerHTML = shunfengerConfig.keywords.map((keyword, index) => `
+    <div class="sf-row sf-keyword-row" data-sf-keyword-index="${index}">
+      <label class="checkbox">
+        <input type="checkbox" data-field="enabled" ${keyword.enabled !== false ? "checked" : ""} />
+        启用
+      </label>
+      <label>
+        关键词
+        <input type="text" data-field="keyword" value="${escapeAttr(keyword.keyword || "")}" placeholder="例如：报名" />
+      </label>
+      <label>
+        分类
+        <input type="text" data-field="category" value="${escapeAttr(keyword.category || "")}" placeholder="例如：报名咨询" />
+      </label>
+      <label>
+        意向等级
+        <select data-field="level">
+          ${levelOptions.map((level) => `<option value="${escapeAttr(level.id)}" ${keyword.level === level.id ? "selected" : ""}>${escapeHtml(level.label)}</option>`).join("")}
+        </select>
+      </label>
+      <button class="sf-row-remove" type="button" data-action="remove-keyword">删</button>
+    </div>
+  `).join("");
+}
+
+async function onSaveShunfengerSettings(event) {
+  event.preventDefault();
+  readShunfengerForm();
+  const response = await sendShunfengerRequest({ type: "SAVE_CONFIG", config: shunfengerConfig });
+  if (response?.ok && response.snapshot) {
+    shunfengerSnapshot = response.snapshot;
+    shunfengerConfig = normalizeShunfengerConfig(response.snapshot.config || shunfengerConfig);
+    renderShunfengerSettings();
+    showActionFeedback(el.sfSettingsTip, "顺风耳设置已保存", "监听账号与关键词规则已更新。");
+    return;
+  }
+  setTip(el.sfSettingsTip, response?.error || "顺风耳设置保存失败。", true);
+}
+
+function readShunfengerForm() {
+  if (!shunfengerConfig) shunfengerConfig = normalizeShunfengerConfig({});
+  shunfengerConfig.pollIntervalSeconds = Math.max(0.5, Number(el.sfPollInterval?.value || 0.5) || 0.5);
+  shunfengerConfig.pageSize = Math.max(1, Math.min(100, Math.round(Number(el.sfPageSize?.value || 50) || 50)));
+  shunfengerConfig.showAllUnread = el.sfShowAllUnread?.checked === true;
+  shunfengerConfig.levels = readShunfengerLevelsFromForm();
+  const fallbackLevel = shunfengerConfig.levels[0]?.id || "medium";
+  const levelIds = new Set(shunfengerConfig.levels.map((level) => level.id));
+  shunfengerConfig.accounts = Array.from(el.sfAccountRows?.querySelectorAll("[data-sf-account-index]") || []).map((row) => ({
+    id: shunfengerConfig.accounts[Number(row.dataset.sfAccountIndex)]?.id || `teacher-${Date.now()}`,
+    enabled: row.querySelector("[data-field='enabled']")?.checked !== false,
+    label: row.querySelector("[data-field='label']")?.value.trim() || "",
+    wxid: row.querySelector("[data-field='wxid']")?.value.trim() || ""
+  })).filter((account) => account.wxid);
+  shunfengerConfig.keywords = Array.from(el.sfKeywordRows?.querySelectorAll("[data-sf-keyword-index]") || []).map((row) => ({
+    id: shunfengerConfig.keywords[Number(row.dataset.sfKeywordIndex)]?.id || `kw-${Date.now()}`,
+    enabled: row.querySelector("[data-field='enabled']")?.checked !== false,
+    keyword: row.querySelector("[data-field='keyword']")?.value.trim() || "",
+    category: row.querySelector("[data-field='category']")?.value.trim() || "",
+    level: levelIds.has(row.querySelector("[data-field='level']")?.value)
+      ? row.querySelector("[data-field='level']").value
+      : fallbackLevel
+  })).filter((keyword) => keyword.keyword);
+}
+
+function readShunfengerLevelsFromForm() {
+  const usedIds = new Set();
+  const rows = Array.from(el.sfLevelRows?.querySelectorAll("[data-sf-level-index]") || []);
+  const levels = rows.map((row, index) => {
+    const source = shunfengerConfig.levels[Number(row.dataset.sfLevelIndex)] || {};
+    const label = row.querySelector("[data-field='label']")?.value.trim() || source.label || `意向等级 ${index + 1}`;
+    const rawId = row.querySelector("[data-field='id']")?.value.trim() || source.id || label;
+    let id = slugifyShunfengerLevelId(rawId) || `level-${index + 1}`;
+    while (usedIds.has(id)) id = `${id}-${index + 1}`;
+    usedIds.add(id);
+    return {
+      id,
+      label,
+      color: normalizeHexColor(row.querySelector("[data-field='color']")?.value || source.color, DEFAULT_SHUNFENGER_LEVELS[index % DEFAULT_SHUNFENGER_LEVELS.length]?.color || "#a855f7")
+    };
+  }).filter((level) => level.id && level.label);
+  return levels.length ? levels : DEFAULT_SHUNFENGER_LEVELS.map((level) => ({ ...level }));
+}
+
+async function importShunfengerAccounts() {
+  setTip(el.sfSettingsTip, "正在从当前 SCRM 页面导入分组账号...", false);
+  const response = await sendShunfengerRequest({ type: "IMPORT_CURRENT_GROUP_ACCOUNTS" });
+  if (response?.ok && response.snapshot) {
+    shunfengerSnapshot = response.snapshot;
+    shunfengerConfig = normalizeShunfengerConfig(response.snapshot.config || {});
+    if (Array.isArray(response.snapshot.state?.accounts)) {
+      shunfengerConfig.accounts = response.snapshot.state.accounts.map(normalizeShunfengerAccount).filter((item) => item.wxid);
+    }
+    renderShunfengerSettings();
+    showActionFeedback(el.sfSettingsTip, "账号已导入", `当前可监听账号 ${response.snapshot.state?.activeAccountCount || shunfengerConfig.accounts.length} 个。`);
+    return;
+  }
+  setTip(el.sfSettingsTip, response?.error || "导入失败，请先切到 SCRM 分组页面。", true);
+}
+
+async function openShunfengerPanel() {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (chrome.sidePanel?.open) {
+      await chrome.sidePanel.open({ windowId: tab?.windowId });
+    }
+  } catch (error) {
+    setTip(el.sfSettingsTip, error?.message || "无法打开线索面板。", true);
+  }
+}
+
+function onShunfengerRowsClick(event) {
+  const button = event.target.closest("button[data-action]");
+  if (!button || !shunfengerConfig) return;
+  const accountRow = button.closest("[data-sf-account-index]");
+  const levelRow = button.closest("[data-sf-level-index]");
+  const keywordRow = button.closest("[data-sf-keyword-index]");
+  if (button.dataset.action === "remove-account" && accountRow) {
+    shunfengerConfig.accounts.splice(Number(accountRow.dataset.sfAccountIndex), 1);
+    renderShunfengerAccountRows();
+  }
+  if (button.dataset.action === "remove-level" && levelRow) {
+    readShunfengerForm();
+    const removed = shunfengerConfig.levels.splice(Number(levelRow.dataset.sfLevelIndex), 1)[0];
+    if (!shunfengerConfig.levels.length) {
+      shunfengerConfig.levels = DEFAULT_SHUNFENGER_LEVELS.map((level) => ({ ...level }));
+    }
+    const fallbackLevel = shunfengerConfig.levels[0]?.id || "medium";
+    if (removed?.id) {
+      shunfengerConfig.keywords = shunfengerConfig.keywords.map((keyword) => keyword.level === removed.id ? { ...keyword, level: fallbackLevel } : keyword);
+    }
+    renderShunfengerSettings();
+  }
+  if (button.dataset.action === "remove-keyword" && keywordRow) {
+    shunfengerConfig.keywords.splice(Number(keywordRow.dataset.sfKeywordIndex), 1);
+    renderShunfengerKeywordRows();
+  }
+}
+
+function onShunfengerLevelInput(event) {
+  const row = event.target.closest("[data-sf-level-index]");
+  if (!row) return;
+  const preview = row.querySelector(".sf-level-preview");
+  if (!preview) return;
+  const label = row.querySelector("[data-field='label']")?.value.trim() || "意向等级";
+  const color = normalizeHexColor(row.querySelector("[data-field='color']")?.value, "#a855f7");
+  preview.textContent = label;
+  preview.style.background = color;
+}
+
+function normalizeShunfengerConfig(raw) {
+  const defaults = {
+    running: false,
+    pollIntervalSeconds: 0.5,
+    pageSize: 50,
+    showAllUnread: false,
+    accounts: [],
+    levels: DEFAULT_SHUNFENGER_LEVELS.map((level) => ({ ...level })),
+    keywords: [
+      { id: "kw-signup", keyword: "报名", category: "报名咨询", level: "high", enabled: true },
+      { id: "kw-consult", keyword: "咨询", category: "报名咨询", level: "medium", enabled: true },
+      { id: "kw-price", keyword: "多少钱", category: "价格咨询", level: "high", enabled: true },
+      { id: "kw-course", keyword: "课程", category: "课程咨询", level: "medium", enabled: true }
+    ]
+  };
+  const levels = Array.isArray(raw.levels) && raw.levels.length
+    ? normalizeShunfengerLevels(raw.levels)
+    : defaults.levels;
+  const levelIds = new Set(levels.map((level) => level.id));
+  const fallbackLevel = levels[0]?.id || "medium";
+  return {
+    ...defaults,
+    ...raw,
+    pollIntervalSeconds: Math.max(0.5, Number(raw.pollIntervalSeconds ?? defaults.pollIntervalSeconds) || defaults.pollIntervalSeconds),
+    pageSize: Math.max(1, Math.min(100, Math.round(Number(raw.pageSize ?? defaults.pageSize) || defaults.pageSize))),
+    showAllUnread: raw.showAllUnread === true,
+    levels,
+    accounts: Array.isArray(raw.accounts) ? raw.accounts.map(normalizeShunfengerAccount).filter((item) => item.wxid || item.label) : [],
+    keywords: Array.isArray(raw.keywords) && raw.keywords.length
+      ? raw.keywords.map((item) => normalizeShunfengerKeyword(item, levelIds, fallbackLevel)).filter((item) => item.keyword)
+      : defaults.keywords
+  };
+}
+
+function normalizeShunfengerLevels(items) {
+  const usedIds = new Set();
+  const levels = items.map((item, index) => {
+    const fallback = DEFAULT_SHUNFENGER_LEVELS[index % DEFAULT_SHUNFENGER_LEVELS.length] || DEFAULT_SHUNFENGER_LEVELS[0];
+    const label = String(item?.label || item?.name || fallback.label || `意向等级 ${index + 1}`).trim();
+    let id = slugifyShunfengerLevelId(item?.id || item?.value || label) || fallback.id || `level-${index + 1}`;
+    while (usedIds.has(id)) id = `${id}-${index + 1}`;
+    usedIds.add(id);
+    return {
+      id,
+      label,
+      color: normalizeHexColor(item?.color, fallback.color)
+    };
+  }).filter((level) => level.id && level.label);
+  return levels.length ? levels : DEFAULT_SHUNFENGER_LEVELS.map((level) => ({ ...level }));
+}
+
+function normalizeShunfengerAccount(item) {
+  return {
+    id: String(item?.id || `teacher-${Date.now()}-${Math.random().toString(16).slice(2)}`),
+    wxid: String(item?.wxid || "").trim(),
+    label: String(item?.label || "").trim(),
+    enabled: item?.enabled !== false
+  };
+}
+
+function normalizeShunfengerKeyword(item, levelIds = new Set(DEFAULT_SHUNFENGER_LEVELS.map((level) => level.id)), fallbackLevel = "medium") {
+  const candidateLevel = String(item?.level || "").trim();
+  const level = levelIds.has(candidateLevel) ? candidateLevel : fallbackLevel;
+  return {
+    id: String(item?.id || `kw-${Date.now()}-${Math.random().toString(16).slice(2)}`),
+    keyword: String(item?.keyword || "").trim(),
+    category: String(item?.category || "").trim(),
+    level,
+    enabled: item?.enabled !== false
+  };
+}
+
+function createShunfengerKeyword() {
+  return { id: `kw-${Date.now()}`, keyword: "", category: "报名咨询", level: shunfengerConfig?.levels?.[0]?.id || "medium", enabled: true };
+}
+
+function createShunfengerLevel() {
+  const nextIndex = (shunfengerConfig?.levels?.length || 0) + 1;
+  return { id: `level-${Date.now()}`, label: `意向等级 ${nextIndex}`, color: "#a855f7" };
+}
+
+function slugifyShunfengerLevelId(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+}
+
+function normalizeHexColor(value, fallback = "#a855f7") {
+  const color = String(value || "").trim();
+  return /^#[0-9a-fA-F]{6}$/.test(color) ? color : fallback;
+}
+
+async function sendShunfengerRequest(message) {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage(message, (response) => {
+      if (chrome.runtime.lastError) {
+        resolve({ ok: false, error: chrome.runtime.lastError.message });
+        return;
+      }
+      resolve(response);
+    });
+  });
 }
 
 function applyAiBaseUrlPreset() {

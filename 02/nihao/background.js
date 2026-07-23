@@ -1,3 +1,5 @@
+import "./shunfenger-background.js";
+
 const STORAGE_KEYS = {
   SNIPPETS: "tb-snippets",
   SETTINGS: "tb-settings",

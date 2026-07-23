@@ -1,10 +1,10 @@
-const STORAGE_KEYS = {
+﻿const STORAGE_KEYS = {
   SETTINGS: "tb-settings",
   QUICK_CLICK_PENDING_TARGET: "tb-quick-click-pending-target",
   QUICK_CLICK_DRAFT: "tb-quick-click-draft"
 };
 const miniMax = window.NihaoMiniMax;
-const LEGACY_AI_REPLY_PROMPT = "以下是聊天上下文：\n{{context}}\n\n请输出 {{count}} 条回复建议，要求：\n1) 每条一句，口语自然；\n2) 语气礼貌；\n3) 不要编造事实；\n4) 每条前加序号。";
+const LEGACY_AI_REPLY_PROMPT = "以下是聊天上下文：\\n{{context}}\\n\\n请输出 {{count}} 条回复建议，要求：\\n1) 每条一句话，口语自然；\\n2) 语气礼貌；\\n3) 不要编造事实；\\n4) 每条前加序号。";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const toggle = document.getElementById("global-toggle");
@@ -40,9 +40,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnQuickClickTest = document.getElementById("btn-quick-click-test");
   const quickClickTip = document.getElementById("quick-click-tip");
   const quickClickList = document.getElementById("quick-click-list");
+  const btnShunfengerLaunch = document.getElementById("btn-shunfenger-launch");
 
   let currentSettings = await loadCurrentSettings();
   let quickClickDraft = await loadQuickClickDraft();
+  let isCapturingQuickClickHotkey = false;
+  let capturedQuickClickModifiers = new Set();
   await applyPendingQuickClickTarget();
   quickClickDraft = await loadQuickClickDraft();
   syncToggles(currentSettings);
@@ -133,15 +136,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  if (btnShunfengerLaunch) {
+    btnShunfengerLaunch.addEventListener("click", async () => {
+      await launchShunfenger();
+    });
+  }
+
   if (btnActivatePlugin) {
     btnActivatePlugin.addEventListener("click", async () => {
       const code = (activationCodeInput.value || "").trim();
       if (code !== "oaayeduangduangduang888") {
-        activationTip.textContent = "激活码错误。";
+        activationTip.textContent = "请先输入激活码。";
         return;
       }
       currentSettings = await persistSettings({ activated: true });
-      activationTip.textContent = "激活成功，神功已解锁。";
+      activationTip.textContent = "激活成功，功能已解锁。";
       applyActivationState(true);
     });
   }
@@ -176,8 +185,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         aiValidateResult.textContent = "未识别到聊天 div.msg-text，请确认当前在 SCRM 聊天窗口页面。";
         return;
       }
-      aiValidateResult.textContent =
-        `识别到 ${merged.total} 条：用户 ${merged.userCount}，我方 ${merged.meCount}。` +
+      aiValidateResult.textContent = `识别到 ${merged.total} 条：用户 ${merged.userCount}，我方 ${merged.meCount}` +
         (merged.preview ? ` 预览：${merged.preview}` : "");
       renderDebug(aiDebugLog, {
         stage: "scan_ok",
@@ -251,24 +259,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const currentData = await chrome.storage.local.get(STORAGE_KEYS.SETTINGS);
       const aiConfig = getAiConfig(currentData[STORAGE_KEYS.SETTINGS] || {});
-      const built = miniMax.buildRequest(
-        aiConfig,
-        "请返回两条简短中文客服回复建议，分别处理“未找到入口”和“需要等待处理”场景。"
-      );
+      const testPrompt = "请返回两条简短中文客服回复建议，分别处理“未找到入口”和“需要等待处理”场景。";
+      const built = miniMax.buildRequest(aiConfig, testPrompt);
       renderDebug(aiDebugLog, {
         stage: "test_request",
         apiFormat: aiConfig.apiFormat,
         endpoint: built.endpoint,
         model: aiConfig.model
       });
-      const data = await requestWithFallback(
-        aiConfig,
-        "请返回两条简短中文客服回复建议，分别处理“未找到入口”和“需要等待处理”场景。",
-        aiDebugLog
-      );
+      const data = await requestWithFallback(aiConfig, testPrompt, aiDebugLog);
       const content = miniMax.parseResponseText(aiConfig.apiFormat, data);
       const suggestions = miniMax.parseSuggestions(content, 2);
-      renderSuggestions(aiSuggestList, suggestions.length ? suggestions : ["接口可用，但未解析到标准序号回复。"]);
+      renderSuggestions(aiSuggestList, suggestions.length ? suggestions : ["接口可用，但未解析到标准序号回复。"]); 
       aiValidateResult.textContent = "接口测试成功。";
       renderDebug(aiDebugLog, { stage: "test_ok", preview: String(content).slice(0, 300) });
     } catch (error) {
@@ -278,12 +280,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnTestAi.disabled = false;
     }
   });
-
   if (btnQuickClickCapture) {
     btnQuickClickCapture.addEventListener("click", () => {
       btnQuickClickCapture.textContent = "请按下快捷键...";
       btnQuickClickCapture.classList.add("is-capturing");
-      window.addEventListener("keydown", captureQuickClickHotkey, { once: true, capture: true });
+      isCapturingQuickClickHotkey = true;
+      capturedQuickClickModifiers = new Set();
+      window.removeEventListener("keydown", captureQuickClickHotkey, true);
+      document.removeEventListener("keydown", captureQuickClickHotkey, true);
+      window.addEventListener("keydown", captureQuickClickHotkey, true);
+      document.addEventListener("keydown", captureQuickClickHotkey, true);
     });
   }
 
@@ -342,6 +348,32 @@ document.addEventListener("DOMContentLoaded", async () => {
       statusText.style.color = "#94a3b8";
       statusText.style.textShadow = "none";
     }
+  }
+
+  async function launchShunfenger() {
+    if (btnShunfengerLaunch) btnShunfengerLaunch.disabled = true;
+    try {
+      await sendShunfengerRequest({ type: "START_MONITOR" });
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (chrome.sidePanel?.open) {
+        await chrome.sidePanel.open({ windowId: tab?.windowId });
+      }
+      window.close();
+    } finally {
+      if (btnShunfengerLaunch) btnShunfengerLaunch.disabled = false;
+    }
+  }
+
+  async function sendShunfengerRequest(message) {
+    return new Promise((resolve) => {
+      chrome.runtime.sendMessage(message, (response) => {
+        if (chrome.runtime.lastError) {
+          resolve({ ok: false, error: chrome.runtime.lastError.message });
+          return;
+        }
+        resolve(response);
+      });
+    });
   }
 
   function applyActivationState(activated) {
@@ -405,7 +437,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     if (aiReplyToggle) aiReplyToggle.checked = settings.aiReplySuggestEnabled === true;
   }
-
   async function loadCurrentSettings() {
     const data = await chrome.storage.local.get(STORAGE_KEYS.SETTINGS);
     return data[STORAGE_KEYS.SETTINGS] || {};
@@ -432,19 +463,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function captureQuickClickHotkey(event) {
     event.preventDefault();
     event.stopPropagation();
-    const hotkey = hotkeyFromKeyboardEvent(event);
-    if (!hotkey) {
-      btnQuickClickCapture.textContent = "点击识别按键";
-      btnQuickClickCapture.classList.remove("is-capturing");
-      setQuickClickTip("没有识别到有效按键，请重试。", true);
+    if (!isCapturingQuickClickHotkey) return;
+    if (event.key === "Escape") {
+      stopQuickClickHotkeyCapture();
+      setQuickClickTip("已取消快捷键录制。");
       return;
     }
+    rememberHotkeyModifiers(event, capturedQuickClickModifiers);
+    const hotkey = hotkeyFromKeyboardEvent(event, capturedQuickClickModifiers);
+    if (!hotkey) {
+      const modifiers = hotkeyModifiersFromKeyboardEvent(event, capturedQuickClickModifiers);
+      btnQuickClickCapture.textContent = modifiers.length ? `${modifiers.join("+")}+...` : "请按下快捷键...";
+      setQuickClickTip("继续按下字母、数字或方向键完成组合键。");
+      return;
+    }
+    stopQuickClickHotkeyCapture();
     quickClickDraft = normalizeQuickClickDraft({ ...quickClickDraft, hotkey });
     await saveQuickClickDraft(readQuickClickDraftFromForm(quickClickDraft));
     fillQuickClickDraft(quickClickDraft);
     setQuickClickTip(`已识别快捷键：${hotkey}`);
   }
 
+  function stopQuickClickHotkeyCapture() {
+    isCapturingQuickClickHotkey = false;
+    capturedQuickClickModifiers = new Set();
+    window.removeEventListener("keydown", captureQuickClickHotkey, true);
+    document.removeEventListener("keydown", captureQuickClickHotkey, true);
+    btnQuickClickCapture.textContent = quickClickDraft.hotkey || "点击识别按键";
+    btnQuickClickCapture.classList.remove("is-capturing");
+  }
   async function updateQuickClickDraftFromForm() {
     quickClickDraft = readQuickClickDraftFromForm(quickClickDraft);
     await saveQuickClickDraft(quickClickDraft);
@@ -456,7 +503,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await saveQuickClickDraft(quickClickDraft);
     try {
       await sendMessageToActiveContent({ type: "tb-start-quick-click-pick", mode });
-      setQuickClickTip(mode === "coordinate" ? "已进入坐标选取，去网页点一下目标位置。" : "已进入元素选取，去网页点一下 button/div。");
+      setQuickClickTip(mode === "coordinate" ? "已进入坐标选取，请回到网页点击目标位置。" : "已进入元素选取，请回到网页点击要绑定的元素。");
       window.close();
     } catch (error) {
       setQuickClickTip(`无法进入选取模式：${error?.message || "请刷新网页后重试"}`, true);
@@ -502,7 +549,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       setQuickClickTip(`测试失败：${error?.message || "请刷新网页后重试"}`, true);
     }
   }
-
   async function onQuickClickListClick(event) {
     const button = event.target.closest("button[data-action]");
     if (!button) return;
@@ -623,7 +669,7 @@ async function notifyActiveTab(type, payload) {
 async function getActiveTab() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || !tab.id) {
-    throw new Error("未获取到当前标签页");
+    throw new Error("未获取到当前标签页。");
   }
   return tab;
 }
@@ -631,7 +677,7 @@ async function getActiveTab() {
 async function sendMessageToActiveContent(message) {
   const tab = await getActiveTab();
   if (!isInjectableTab(tab)) {
-    throw new Error("当前页面不允许插件选取，请切到普通网页再试");
+    throw new Error("当前页面不允许插件选取，请切到普通网页后重试。");
   }
   try {
     return await chrome.tabs.sendMessage(tab.id, message);
@@ -858,16 +904,42 @@ function normalizeQuickClickRules(raw) {
     .filter((item) => item.id);
 }
 
-function hotkeyFromKeyboardEvent(event) {
-  const key = normalizeKey(event.key);
-  if (!key || ["Control", "Alt", "Shift", "Meta"].includes(key)) return "";
-  const parts = [];
-  if (event.ctrlKey) parts.push("Ctrl");
-  if (event.altKey) parts.push("Alt");
-  if (event.shiftKey) parts.push("Shift");
-  if (event.metaKey) parts.push("Meta");
+function hotkeyFromKeyboardEvent(event, capturedModifiers = new Set()) {
+  const key = normalizeKeyFromKeyboardEvent(event);
+  if (!key || ["Control", "Ctrl", "Alt", "Shift", "Meta"].includes(key)) return "";
+  const parts = hotkeyModifiersFromKeyboardEvent(event, capturedModifiers);
   parts.push(key);
   return parts.join("+");
+}
+
+function normalizeKeyFromKeyboardEvent(event) {
+  const codeMap = {
+    ArrowUp: "ArrowUp",
+    ArrowDown: "ArrowDown",
+    ArrowLeft: "ArrowLeft",
+    ArrowRight: "ArrowRight",
+    Space: "Space"
+  };
+  if (codeMap[event.code]) return codeMap[event.code];
+  return normalizeKey(event.key);
+}
+
+function rememberHotkeyModifiers(event, capturedModifiers) {
+  if (!capturedModifiers) return;
+  const key = normalizeKeyFromKeyboardEvent(event);
+  if (key === "Ctrl" || event.ctrlKey || event.code === "ControlLeft" || event.code === "ControlRight") capturedModifiers.add("Ctrl");
+  if (key === "Alt" || event.altKey || event.code === "AltLeft" || event.code === "AltRight") capturedModifiers.add("Alt");
+  if (key === "Shift" || event.shiftKey || event.code === "ShiftLeft" || event.code === "ShiftRight") capturedModifiers.add("Shift");
+  if (key === "Meta" || event.metaKey || event.code === "MetaLeft" || event.code === "MetaRight") capturedModifiers.add("Meta");
+}
+
+function hotkeyModifiersFromKeyboardEvent(event, capturedModifiers = new Set()) {
+  const parts = new Set(capturedModifiers || []);
+  if (event.ctrlKey) parts.add("Ctrl");
+  if (event.altKey) parts.add("Alt");
+  if (event.shiftKey) parts.add("Shift");
+  if (event.metaKey) parts.add("Meta");
+  return ["Ctrl", "Alt", "Shift", "Meta"].filter((part) => parts.has(part));
 }
 
 function normalizeHotkey(raw) {
@@ -990,10 +1062,12 @@ async function collectConversationFromTab(tabId) {
   );
 }
 
-function getAiConfig(raw) {
-  const defaults = miniMax.getDefaultConfig();
+function getAiConfig(raw = {}) {
+  const defaults = miniMax.getDefaultConfig ? miniMax.getDefaultConfig() : (miniMax.DEFAULT_CONFIG || {});
   const replyPrompt = typeof raw.aiReplyPrompt === "string" ? raw.aiReplyPrompt.trim() : "";
   const replyPromptWithIntent = typeof raw.aiReplyPromptWithIntent === "string" ? raw.aiReplyPromptWithIntent.trim() : "";
+  const defaultReplyPrompt = "以下是聊天上下文：\n{{context}}\n\n请输出 {{count}} 条回复建议，要求：\n1) 每条一句话，口语自然；\n2) 语气礼貌；\n3) 不要编造事实；\n4) 每条前加序号。";
+  const defaultReplyPromptWithIntent = "以下是聊天上下文：\n{{context}}\n\n{{intent_block}}请输出 {{count}} 条回复建议，要求：\n1) 优先满足额外要求；\n2) 每条一句话，口语自然；\n3) 语气礼貌；\n4) 不要编造事实；\n5) 每条前加序号。";
   const config = {
     apiFormat: raw.aiApiFormat === "anthropic" ? "anthropic" : "openai",
     apiHostPreset: ["minimax-cn", "minimax-global", "deepseek", "volcengine"].includes(raw.aiApiHostPreset)
@@ -1004,13 +1078,11 @@ function getAiConfig(raw) {
     model: String(raw.aiModel || defaults.model).trim(),
     suggestCount: Number(raw.aiSuggestCount || defaults.suggestCount),
     systemPrompt: String(raw.aiSystemPrompt || defaults.systemPrompt).trim(),
-    replyPrompt: !replyPrompt || replyPrompt === LEGACY_AI_REPLY_PROMPT
-      ? "以下是聊天上下文：\n{{context}}\n\n请输出 {{count}} 条回复建议，要求：\n1) 每条一句，口语自然；\n2) 语气礼貌；\n3) 不要编造事实；\n4) 每条前加序号。"
-      : replyPrompt,
-    replyPromptWithIntent: replyPromptWithIntent || "以下是聊天上下文：\n{{context}}\n\n{{intent_block}}请输出 {{count}} 条回复建议，要求：\n1) 优先满足额外要求；\n2) 每条一句，口语自然；\n3) 语气礼貌；\n4) 不要编造事实；\n5) 每条前加序号。"
+    replyPrompt: !replyPrompt || replyPrompt === LEGACY_AI_REPLY_PROMPT ? defaultReplyPrompt : replyPrompt,
+    replyPromptWithIntent: replyPromptWithIntent || defaultReplyPromptWithIntent
   };
   if (!config.apiKey) {
-    throw new Error("请先在“基础设置”里配置 AI API Key。");
+    throw new Error("请先在基础设置里配置 AI API Key。");
   }
   return config;
 }
@@ -1023,8 +1095,7 @@ function buildConversationPrompt(messages, suggestCount, templateStr, intentText
   const count = Math.min(5, Math.max(1, Number(suggestCount || 3)));
   const intent = String(intentText || "").trim();
   const intentBlock = intent ? `额外要求：\n${intent}\n\n` : "";
-
-  const template = templateStr || "以下是聊天上下文：\n{{context}}\n\n{{intent_block}}请输出 {{count}} 条回复建议，要求：\n1) 每条一句，口语自然；\n2) 语气礼貌；\n3) 不要编造事实；\n4) 每条前加序号。";
+  const template = templateStr || "以下是聊天上下文：\n{{context}}\n\n{{intent_block}}请输出 {{count}} 条回复建议，要求：\n1) 每条一句话，口语自然；\n2) 语气礼貌；\n3) 不要编造事实；\n4) 每条前加序号。";
 
   return template
     .replace(/\{\{context\}\}/g, conversationText)
@@ -1034,7 +1105,6 @@ function buildConversationPrompt(messages, suggestCount, templateStr, intentText
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
-
 function compactMessages(messages, maxMessages, maxChars) {
   const list = Array.isArray(messages) ? messages : [];
   const result = [];
@@ -1127,3 +1197,7 @@ function renderSuggestions(container, suggestions) {
     container.appendChild(item);
   });
 }
+
+
+
+

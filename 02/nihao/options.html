@@ -22,6 +22,7 @@
           <a href="#" data-target="section-import" data-title="Excel 导入" data-desc="从表格批量导入文本话术。">Excel 导入</a>
           <a href="#" data-target="section-settings" data-title="基础设置" data-desc="配置触发方式、联想面板、激活状态与填入特效。">基础设置</a>
           <a href="#" data-target="section-ai" data-title="AI 建议配置" data-desc="配置 AI 接口、回复分支与扩展指令。">AI 建议配置</a>
+          <a href="#" data-target="section-shunfenger" data-title="顺风耳监听" data-desc="配置 SCRM 账号监听、关键词命中与线索面板。">顺风耳监听</a>
           <a href="#" data-target="section-change-helper" data-title="异动处理" data-desc="配置异动处理悬浮窗使用的模板与变量。">异动处理</a>
         </nav>
       </aside>
@@ -155,7 +156,7 @@
                 <label class="snippet-image-picker">
                   <span>上传图片 <span class="required">*</span></span>
                   <input id="snippet-image-upload" type="file" accept="image/*" />
-                  <span class="snippet-image-picker-text">点击选择 JPG / PNG / WEBP 等图片，单张不超过 2MB</span>
+                  <span class="snippet-image-picker-text">点击选择 JPG / PNG / WEBP 等图片，单张不超过 10MB</span>
                 </label>
                 <div id="snippet-image-preview-wrap" class="snippet-image-preview-wrap" hidden>
                   <img id="snippet-image-preview" class="snippet-image-preview" alt="图片预览" />
@@ -678,6 +679,76 @@
                 <tbody id="ai-extension-rule-tbody"></tbody>
               </table>
             </div>
+          </section>
+        </div>
+
+        <div id="section-shunfenger" class="tab-pane">
+          <section class="page-intro">
+            <div>
+              <div class="page-intro-badge">SCRM 模块</div>
+              <h2>配置顺风耳线索监听</h2>
+              <p>顺风耳只在 <code>tool.miaokol.com</code> 生效，用于监听分组账号的新消息，并根据关键词生成待处理线索。</p>
+            </div>
+            <div class="page-intro-tips">
+              <span class="tip-chip">账号发现</span>
+              <span class="tip-chip">关键词命中</span>
+              <span class="tip-chip">侧栏线索</span>
+            </div>
+          </section>
+
+          <section class="card shunfenger-settings-card">
+            <div class="info-row">
+              <div>
+                <div class="info-title">监听状态：<span id="sf-running-status">未启动</span></div>
+                <div id="sf-status-tip" class="tip info-tip">打开 SCRM 页面后，可从 popup 启动监听。</div>
+              </div>
+              <div class="info-actions">
+                <button id="sf-btn-import-accounts" type="button" class="btn-default">导入当前分组账号</button>
+                <button id="sf-btn-open-panel" type="button" class="btn-default">打开线索面板</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <form id="shunfenger-settings-form" class="form-grid">
+              <label>
+                轮询间隔（秒）
+                <input id="sf-poll-interval" type="number" min="0.5" step="0.5" />
+              </label>
+              <label>
+                每页读取数量
+                <input id="sf-page-size" type="number" min="1" max="100" />
+              </label>
+              <label class="checkbox full" style="margin-top: 0;">
+                <input id="sf-show-all-unread" type="checkbox" />
+                展示所有未读消息（关闭时仅展示命中关键词的线索）
+              </label>
+              <div class="full sf-section-block">
+                <div class="section-title">
+                  <h2>监听账号</h2>
+                  <span class="section-title-note">账号从当前 SCRM 分组导入</span>
+                </div>
+                <div id="sf-account-rows" class="sf-rows"></div>
+              </div>
+              <div class="full sf-section-block">
+                <div class="section-title">
+                  <h2>意向等级</h2>
+                  <button id="sf-btn-add-level" type="button" class="btn-default">添加等级</button>
+                </div>
+                <div id="sf-level-rows" class="sf-rows"></div>
+              </div>
+              <div class="full sf-section-block">
+                <div class="section-title">
+                  <h2>关键词规则</h2>
+                  <button id="sf-btn-add-keyword" type="button" class="btn-default">添加关键词</button>
+                </div>
+                <div id="sf-keyword-rows" class="sf-rows"></div>
+              </div>
+              <div class="form-actions full">
+                <button id="sf-btn-save" type="submit" class="btn-primary">保存顺风耳设置</button>
+                <span id="sf-settings-tip" class="tip"></span>
+              </div>
+            </form>
           </section>
         </div>
 

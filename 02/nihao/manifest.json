@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "话术马喽（马喽版）",
-  "version": "1.9.6",
-  "version_name": "1.9.6 马喽版",
+  "version": "2.0.3",
+  "version_name": "2.0.3 马喽版",
   "description": "话术马喽（马喽版），提升沟通效率",
   "action": {
     "default_popup": "popup.html",
@@ -18,13 +18,16 @@
     "storage",
     "activeTab",
     "scripting",
-    "contextMenus"
+    "contextMenus",
+    "alarms",
+    "sidePanel"
   ],
   "host_permissions": [
     "<all_urls>"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "options_page": "options.html",
   "content_scripts": [
@@ -42,6 +45,15 @@
         "content.js"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://tool.miaokol.com/*"
+      ],
+      "js": [
+        "shunfenger-content.js"
+      ],
+      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
@@ -53,6 +65,17 @@
       "matches": [
         "<all_urls>"
       ]
+    },
+    {
+      "resources": [
+        "page-hook.js"
+      ],
+      "matches": [
+        "https://tool.miaokol.com/*"
+      ]
     }
-  ]
+  ],
+  "side_panel": {
+    "default_path": "side-panel.html"
+  }
 }
